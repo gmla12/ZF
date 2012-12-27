@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public class BeanFMM implements Serializable{
 
-    private Object idFMM;
+    private Object idFMMs;
     private Object FMM;
     private Object cliente;
     private Object pedido;
@@ -35,12 +35,12 @@ public class BeanFMM implements Serializable{
         this.cliente = cliente;
     }
 
-    public Object getIdFMM() {
-        return idFMM;
+    public Object getIdFMMs() {
+        return idFMMs;
     }
 
-    public void setIdFMM(Object idFMM) {
-        this.idFMM = idFMM;
+    public void setIdFMMs(Object idFMMs) {
+        this.idFMMs = idFMMs;
     }
 
     public Object getLote() {

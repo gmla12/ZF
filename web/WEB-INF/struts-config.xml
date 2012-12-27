@@ -35,6 +35,7 @@
         <form-bean name="DO" type="forms.DOForm"/>
         <form-bean name="OpDO" type="forms.DOOpForm"/>
         <form-bean name="FMM" type="forms.FMMForm"/>
+        <form-bean name="OpFMM" type="forms.FMMOpForm"/>
         <form-bean name="Auditoria" type="forms.log.AuditoriaForm"/>
         <form-bean name="Auditoria2" type="forms.log.AuditoriaForm"/>
     </form-beans>

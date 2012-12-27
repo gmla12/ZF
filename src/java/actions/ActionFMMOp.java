@@ -9,8 +9,7 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import modelo.GestionDO;
-import modelo.GestionEntidad;
+import modelo.GestionFMM;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -46,9 +45,7 @@ public class ActionFMMOp extends Action {
             throws Exception {
 
         FMMOpForm fo = (FMMOpForm) form;
-        GestionDO gr = new GestionDO();
-        GestionEntidad grEntidad = new GestionEntidad();
-//        GestionPlantillaDispositivoHija grHija = new GestionPlantillaDispositivoHija();
+        GestionFMM gr = new GestionFMM();
         HttpSession session = request.getSession();
 
         System.out.println("********************************************");
@@ -57,7 +54,6 @@ public class ActionFMMOp extends Action {
         request.setAttribute("respuesta", "");
 
         if (request.getAttribute("getOp") == "buscar") {
-            System.out.println("Volver ActionDOOP");
             fo.setOp("buscar");
             request.setAttribute("getOp", "buscar2");
         }
@@ -65,69 +61,26 @@ public class ActionFMMOp extends Action {
         if (fo.getOp() != null) {
 
             if (fo.getOp().equals("modificar")) {
-                System.out.println("Modificar ActionDOOP");
 
-                ArrayList<Object> resultado;
-                resultado = gr.MostrarDOFormulario(fo.getId(), false, null);
+                ArrayList<Object> resultado = new ArrayList<Object>();
+                resultado = gr.MostrarFMMFormulario(Integer.parseInt(fo.getId()), false, null);
                 if ((Boolean) resultado.get(0) == false) {
 
-                    request.setAttribute("getOp2", "modificar"); //valida si se modifica o es nuevo
-                    request.setAttribute("getDO", gr.getDO());
-                    request.setAttribute("getIdCliente", gr.getIdCliente());
+                    request.setAttribute("getIdFMMs", gr.getIdFMMs());
+                    request.setAttribute("getFMM", gr.getFMM());
+                    request.setAttribute("getCliente", gr.getCliente());
+                    request.setAttribute("getPedido", gr.getPedido());
                     request.setAttribute("getLote", gr.getLote());
-                    request.setAttribute("getBL", gr.getBL());
-                    request.setAttribute("getIdPuerto", gr.getIdPuerto());
-                    session.setAttribute("getIdSucursal", gr.getIdSucursal());
-                    session.setAttribute("getObservaciones", gr.getObservaciones());
-
-//                    ArrayList<Object> GR_CARACTERISTICAPLANTILLA;
-//                    ArrayList<Object> GR_PlantillaDisponible;
-//                    ArrayList<Object> GR_PlantillaHija;
-//
-//                    ArrayList<Object> resultado2;
-//                    resultado2 = grCaract.MostrarCaracteristicaPlantilla(Integer.valueOf(String.valueOf(gr.getIdPlantillaDispositivo())), false, null);
-//                    if ((Boolean) resultado2.get(0) == false) {
-//
-//                        GR_CARACTERISTICAPLANTILLA = (ArrayList) resultado2.get(1);
-//
-//                        ArrayList<Object> resultado3;
-//                        resultado3 = gr.MostrarPlantillaDispositivoHija(Integer.valueOf(String.valueOf(gr.getIdPlantillaDispositivo())), false, null);
-//                        if ((Boolean) resultado3.get(0) == false) {
-//
-//                            GR_PlantillaDisponible = (ArrayList) resultado3.get(1);
-//
-//                            ArrayList<Object> resultado4;
-//                            resultado4 = grHija.MostrarPlantillaDispositivoHija(Integer.valueOf(String.valueOf(gr.getIdPlantillaDispositivo())), false, null);
-//                            if ((Boolean) resultado4.get(0) == false) {
-//
-//                                GR_PlantillaHija = (ArrayList) resultado4.get(1);
-//
-//                                session.setAttribute("GR_CARACTERISTICAPLANTILLA", GR_CARACTERISTICAPLANTILLA);
-//                                session.setAttribute("GR_PlantillaDisponible", GR_PlantillaDisponible);
-//                                session.setAttribute("GR_PlantillaHija", GR_PlantillaHija);
+                    request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
+                    request.setAttribute("getNombreUsu", gr.getNombreUsu());
+                    //para validar si se modifico un campo
+                    session.setAttribute("getFMMIdFMMs", gr.getIdFMMs());
+                    session.setAttribute("getFMMFMM", gr.getFMM());
+                    session.setAttribute("getFMMCliente", gr.getCliente());
+                    session.setAttribute("getFMMPedido", gr.getPedido());
+                    session.setAttribute("getFMMLote", gr.getLote());
 
                     return mapping.findForward("modificar");
-
-//                            } else {
-//
-//                                request.setAttribute("error", resultado4.get(1));
-//                                return mapping.findForward("error");
-//
-//                            }
-//
-//                        } else {
-//
-//                            request.setAttribute("error", resultado3.get(1));
-//                            return mapping.findForward("error");
-//
-//                        }
-//
-//                    } else {
-//
-//                        request.setAttribute("error", resultado2.get(1));
-//                        return mapping.findForward("error");
-//
-//                    }
 
                 } else {
 
@@ -137,92 +90,72 @@ public class ActionFMMOp extends Action {
                 }
 
             } else if (fo.getOp().equals("buscar")) {
-                System.out.println("Buscar ActionDOOP");
 
-//                if (fo.getbIdEntidad() != null) {
-//                    session.setAttribute("getbIdEntidad", fo.getbIdEntidad());
-//                    session.setAttribute("getbNumFactura", fo.getbNumFactura());
-//                    session.setAttribute("getbFecha", fo.getbFecha());
-//                } else {
-//                    fo.setbIdEntidad((String) session.getAttribute("getbIdEntidad"));
-//                    fo.setbNumFactura((String) session.getAttribute("getbNumFactura"));
-//                    fo.setbFecha((String) session.getAttribute("getbFecha"));
-//                }
-//
-//                ArrayList<Object> resultado;
-//                resultado = gr.MostrarFacturaOP(fo, false, null);
-//                if ((Boolean) resultado.get(0) == false) {
-//
-//                    session.setAttribute("GR_FACTURA", resultado.get(1));
-                return mapping.findForward("ok");
-//
-//                } else {
-//
-//                    request.setAttribute("error", resultado.get(1));
-//                    return mapping.findForward("error");
-//
-//                }
+                if (fo.getbCliente() == null) {
+                    fo.setbFMM((String) session.getAttribute("getbFMM"));
+                    fo.setbCliente((String) session.getAttribute("getbCliente"));
+                    fo.setbPedido((String) session.getAttribute("getbPedido"));
+                    fo.setbLote((String) session.getAttribute("getbLote"));
+                }
+
+                ArrayList<Object> resultado = new ArrayList<Object>();
+                resultado = gr.MostrarFMMOP(fo, false, null);
+                if ((Boolean) resultado.get(0) == false) {
+
+                    session.setAttribute("getbFMM", fo.getbFMM());
+                    session.setAttribute("getbCliente", fo.getbCliente());
+                    session.setAttribute("getbPedido", fo.getbPedido());
+                    session.setAttribute("getbLote", fo.getbLote());
+
+                    session.setAttribute("GR_FMM", resultado.get(1));
+                    return mapping.findForward("ok");
+
+                } else {
+
+                    request.setAttribute("error", resultado.get(1));
+                    return mapping.findForward("error");
+
+                }
 
             } else {
-                System.out.println("Nuevo ActionFMMOP");
 
-                request.setAttribute("getOp2", "nuevo"); //valida si se modifica o es nuevo
-                request.setAttribute("getDO", "");
-                request.setAttribute("getIdCliente", "");
+                request.setAttribute("getIdFMMs", "");
+                request.setAttribute("getFMM", "");
                 request.setAttribute("getCliente", "");
-                request.setAttribute("getIdSucursal", "");
+                request.setAttribute("getPedido", "");
                 request.setAttribute("getLote", "");
-                request.setAttribute("getBL", "");
-                request.setAttribute("getIdPuerto", "");
-                request.setAttribute("getObservaciones", "");
+                request.setAttribute("getNombreUsu", "");
+                request.setAttribute("getFechaModificacion", "");
 
                 return mapping.findForward("nuevo");
 
             }
 
         } else {
-//            System.out.println("1er Ingreso ActionDOOP");
-//
-//            session.setAttribute("getbDO", "");
-//            session.setAttribute("getbReferencia", "");
-//            session.setAttribute("getbIdCliente", "");
-//            session.setAttribute("getbCliente", "");
-//            session.setAttribute("getbBL", "");
-//            session.setAttribute("getbLote", "");
-//            session.setAttribute("getbDescripcion", "");
-//            fo.setbDO("");
-//            fo.setbReferencia("");
-//            fo.setbIdCliente("");
-//            fo.setbBL("");
-//            fo.setbLote("");
-//            fo.setbDescripcion("");
-//
-//            ArrayList<Object> resultado;
-//            resultado = gr.MostrarDOOP(fo, false, null);
-//            if ((Boolean) resultado.get(0) == false) {
-//
-//                ArrayList<Object> resultado1;
-//                resultado1 = grEntidad.MostrarEntidad(false, null);
-//                if ((Boolean) resultado1.get(0) == false) {
-//
-//                    session.setAttribute("CMB_ENTIDAD", resultado1.get(1));
-//                    session.setAttribute("GR_DOs", resultado.get(1));
-                    return mapping.findForward("ok");
-//
-//                } else {
-//
-//                    request.setAttribute("error", resultado1.get(1));
-//                    return mapping.findForward("error");
-//
-//                }
-//
-//            } else {
-//
-//                request.setAttribute("error", resultado.get(1));
-//                return mapping.findForward("error");
-//
-//            }
-//
+
+            session.setAttribute("getbFMM", "");
+            session.setAttribute("getbCliente", "");
+            session.setAttribute("getbPedido", "");
+            session.setAttribute("getbLote", "");
+            fo.setbFMM("");
+            fo.setbCliente("");
+            fo.setbPedido("");
+            fo.setbLote("");
+
+            ArrayList<Object> resultado = new ArrayList<Object>();
+            resultado = gr.MostrarFMMOP(fo, false, null);
+            if ((Boolean) resultado.get(0) == false) {
+
+                session.setAttribute("GR_FMM", resultado.get(1));
+                return mapping.findForward("ok");
+
+            } else {
+
+                request.setAttribute("error", resultado.get(1));
+                return mapping.findForward("error");
+
+            }
+
         }
 
     }

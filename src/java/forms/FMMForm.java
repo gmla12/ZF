@@ -12,13 +12,22 @@ import org.apache.struts.action.ActionForm;
  * @author Mario
  */
 public class FMMForm extends ActionForm{
-    private int idFMM;
+    private int idFMMs;
     private String FMM;
     private String cliente;
     private String lote;
     private String pedido;
+    private Integer idUsu;
     private String op;
     private String op2;
+
+    public Integer getIdUsu() {
+        return idUsu;
+    }
+
+    public void setIdUsu(Integer idUsu) {
+        this.idUsu = idUsu;
+    }
 
     public String getFMM() {
         return FMM;
@@ -36,12 +45,12 @@ public class FMMForm extends ActionForm{
         this.cliente = cliente;
     }
 
-    public int getIdFMM() {
-        return idFMM;
+    public int getIdFMMs() {
+        return idFMMs;
     }
 
-    public void setIdFMM(int idFMM) {
-        this.idFMM = idFMM;
+    public void setIdFMMs(int idFMMs) {
+        this.idFMMs = idFMMs;
     }
 
     public String getLote() {

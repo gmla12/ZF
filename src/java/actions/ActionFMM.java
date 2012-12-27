@@ -4,14 +4,14 @@
  */
 package actions;
 
-import com.mysql.jdbc.Connection;
-import forms.DOForm;
-import forms.bean.BeanDO;
+import forms.FMMForm;
+import java.sql.Connection;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import modelo.GestionDO;
+import modelo.log.GestionAuditoria;
+import modelo.GestionFMM;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -36,35 +36,122 @@ public class ActionFMM extends Action {
             HttpServletResponse response)
             throws Exception {
 
-        DOForm fo = (DOForm) form;
-        GestionDO gr = new GestionDO();
+        FMMForm fo = (FMMForm) form;
+        GestionFMM gr = new GestionFMM();
+        GestionAuditoria gA = new GestionAuditoria();
         HttpSession session = request.getSession();
-        System.out.println("Action DO");
-
         if (fo.getOp().equals("nuevo")) {
-            System.out.println("Nuevo ActionDO");
 
-            request.setAttribute("getIdDO", fo.getIdDO());
-            request.setAttribute("getDO", fo.getDO());
-            request.setAttribute("getIdCliente", fo.getIdCliente());
-            request.setAttribute("getIdSucursal", fo.getIdSucursal());
-            request.setAttribute("getIdPuerto", fo.getIdPuerto());
+            request.setAttribute("getIdFMMs", fo.getIdFMMs());
+            request.setAttribute("getFMM", fo.getFMM());
+            request.setAttribute("getCliente", fo.getCliente());
+            request.setAttribute("getPedido", fo.getPedido());
             request.setAttribute("getLote", fo.getLote());
-            request.setAttribute("getBL", fo.getBL());
-            request.setAttribute("getObservaciones", fo.getObservaciones());
 
-            ArrayList<Object> resultado;
-            resultado = gr.IngresaDO(fo, false, null);
+            ArrayList<Object> resultado = new ArrayList<Object>();
+            Connection cn = null;
+            resultado = gr.ObtenerConexion();
             if ((Boolean) resultado.get(0) == false) {
-                if ((Integer) resultado.get(2) >= 1) {
-                    request.setAttribute("getIdDO", resultado.get(1));
-                    request.setAttribute("respuesta", "Registro ingresado correctamente.");
-                    System.out.println("Action Ingreso DO");
+
+                cn = (Connection) resultado.get(1);
+                ArrayList<Object> resultado1 = new ArrayList<Object>();
+                resultado1 = gr.autoCommint(false, cn);
+                if ((Boolean) resultado1.get(0) == false) {
+
+                    ArrayList<Object> resultado2 = new ArrayList<Object>();
+                    resultado2 = gr.IngresaFMM(fo, true, cn);
+                    if ((Boolean) resultado2.get(0) == false) {
+
+                        fo.setIdFMMs(Integer.valueOf(resultado2.get(1).toString()));
+
+                        ArrayList<Object> resultado3 = new ArrayList<Object>();
+                        resultado3 = gA.BuscarFormulario("fmm", true, cn);
+                        if ((Boolean) resultado3.get(0) == false) {
+
+                            ArrayList<Object> resultado4 = new ArrayList<Object>();
+                            String valor_nuevo = "id=" + fo.getIdFMMs() + "&fmm=" + fo.getFMM() + "&cliente=" + fo.getCliente() + "&pedido=" + fo.getPedido() + "&lote=" + fo.getLote();
+                            resultado4 = gA.IngresaAuditoria("Nuevo", "", valor_nuevo, fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdFMMs()), true, cn);
+                            if ((Boolean) resultado4.get(0) == false) {
+
+                                ArrayList<Object> resultado5 = new ArrayList<Object>();
+                                resultado5 = gr.commint(cn);
+                                if ((Boolean) resultado5.get(0) == false) {
+
+                                    ArrayList<Object> resultado6 = new ArrayList<Object>();
+                                    resultado6 = gr.autoCommint(true, cn);
+                                    if ((Boolean) resultado6.get(0) == false) {
+
+                                        ArrayList<Object> resultado7 = new ArrayList<Object>();
+                                        resultado7 = gr.MostrarFMMFormulario(fo.getIdFMMs(), false, null);
+                                        if ((Boolean) resultado7.get(0) == false) {
+
+                                            request.setAttribute("getIdFMMs", gr.getIdFMMs());
+                                            request.setAttribute("getFMM", gr.getFMM());
+                                            request.setAttribute("getCliente", gr.getCliente());
+                                            request.setAttribute("getPedido", gr.getPedido());
+                                            request.setAttribute("getLote", gr.getLote());
+                                            request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
+                                            request.setAttribute("getNombreUsu", gr.getNombreUsu());
+                                            //para validar si se modifico un campo
+                                            session.setAttribute("getFMMIdFMMs", gr.getIdFMMs());
+                                            session.setAttribute("getFMMFMM", gr.getFMM());
+                                            session.setAttribute("getFMMCliente", gr.getCliente());
+                                            session.setAttribute("getFMMPedido", gr.getPedido());
+                                            session.setAttribute("getFMMLote", gr.getLote());
+
+                                            request.setAttribute("respuesta", "Registro ingresado correctamente.");
+                                            System.out.println("Action Ingreso FMM");
+                                            return mapping.findForward("ok");
+
+                                        } else {
+
+                                            request.setAttribute("error", resultado7.get(1));
+                                            return mapping.findForward("error");
+
+                                        }
+
+                                    } else {
+
+                                        request.setAttribute("error", resultado6.get(1));
+                                        return mapping.findForward("error");
+
+                                    }
+
+                                } else {
+
+                                    request.setAttribute("error", resultado5.get(1));
+                                    return mapping.findForward("error");
+
+                                }
+
+                            } else {
+
+                                request.setAttribute("error", resultado4.get(1));
+                                return mapping.findForward("error");
+
+                            }
+
+                        } else {
+
+                            request.setAttribute("error", resultado3.get(1));
+                            return mapping.findForward("error");
+
+                        }
+
+                    } else {
+
+                        request.setAttribute("error", resultado2.get(1));
+                        return mapping.findForward("error");
+
+                    }
+
                 } else {
-                    request.setAttribute("respuesta", "Registro no fue ingresado correctamente, vuelvalo a intentar o contacte al programador.");
-                    System.out.println("Action Ingreso DO");
+
+                    request.setAttribute("error", resultado1.get(1));
+                    return mapping.findForward("error");
+
                 }
-                return mapping.findForward("ok");
+
             } else {
 
                 request.setAttribute("error", resultado.get(1));
@@ -73,316 +160,276 @@ public class ActionFMM extends Action {
             }
 
         } else if (fo.getOp().equals("modificar")) {
-            System.out.println("Modificar ActionDO");
 
-            request.setAttribute("getIdDO", fo.getIdDO());
-            request.setAttribute("getDO", fo.getDO());
-            request.setAttribute("getIdCliente", fo.getIdCliente());
-            request.setAttribute("getIdSucursal", fo.getIdSucursal());
-            request.setAttribute("getIdPuerto", fo.getIdPuerto());
+            request.setAttribute("getIdFMMs", fo.getIdFMMs());
+            request.setAttribute("getFMM", fo.getFMM());
+            request.setAttribute("getCliente", fo.getCliente());
+            request.setAttribute("getPedido", fo.getPedido());
             request.setAttribute("getLote", fo.getLote());
-            request.setAttribute("getBL", fo.getBL());
-            request.setAttribute("getObservaciones", fo.getObservaciones());
-//
-//            ArrayList<Object> resultado;
-//            resultado = (ArrayList) grCaract.ObtenerConexion();
-//            if ((Boolean) resultado.get(0) == false) {
-//
-//                Connection cn = (Connection) resultado.get(1);
-//
-//                ArrayList<Object> resultado2;
-//                resultado2 = (ArrayList) grCaract.autoCommint(false, cn);
-//                if ((Boolean) resultado2.get(0) == false) {
-//
-//                    //Graba si hay caracteristicas nuevas o modificadas
-//                    if (GR_CARACTERISTICAPLANTILLA != null) {
-//
-//                        BeanCaracteristicaPlantilla buCaracteristicaPlantilla1;
-//                        BeanCaracteristicaPlantilla buCaracteristicaPlantilla2;
-//
-//                        for (int i = 0; i < GR_CARACTERISTICAPLANTILLA.size(); i++) {
-//
-//                            buCaracteristicaPlantilla2 = (BeanCaracteristicaPlantilla) GR_CARACTERISTICAPLANTILLA.get(i);
-//
-//                            if (buCaracteristicaPlantilla2.getIdCaracteristicaPlantilla() == null) {
-//                                ArrayList<Object> resultado3;
-//                                resultado3 = (ArrayList) grCaract.IngresaCaracteristicaPlantilla(fo.getIdPlantillaDispositivo(), String.valueOf(buCaracteristicaPlantilla2.getNombre()), Boolean.parseBoolean(String.valueOf(buCaracteristicaPlantilla2.getObligatorio())), Boolean.parseBoolean(String.valueOf(buCaracteristicaPlantilla2.getHabilitar())), true, cn);
-//                                if ((Boolean) resultado3.get(0) == true) {
-//
-//                                    request.setAttribute("error", resultado3.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//                            } else {
-//
-//
-//                                ArrayList<Object> resultado4;
-//                                resultado4 = (ArrayList) grCaract.MostrarCaracteristicaPlantilla(Integer.parseInt(String.valueOf(buCaracteristicaPlantilla2.getIdCaracteristicaPlantilla())), fo.getIdPlantillaDispositivo(), true, cn);
-//                                if ((Boolean) resultado4.get(0) == false) {
-//
-//                                    buCaracteristicaPlantilla1 = (BeanCaracteristicaPlantilla) resultado4.get(1);
-//
-//                                    if (buCaracteristicaPlantilla1.getIdCaracteristicaPlantilla() == buCaracteristicaPlantilla2.getIdCaracteristicaPlantilla()) {
-//
-//                                        ArrayList<Object> resultado5;
-//                                        resultado5 = (ArrayList) grCaract.ModificaCaracteristicaPlantilla(Integer.parseInt(String.valueOf(buCaracteristicaPlantilla2.getIdCaracteristicaPlantilla())), fo.getIdPlantillaDispositivo(), String.valueOf(buCaracteristicaPlantilla2.getNombre()), Boolean.parseBoolean(String.valueOf(buCaracteristicaPlantilla2.getObligatorio())), Boolean.parseBoolean(String.valueOf(buCaracteristicaPlantilla2.getHabilitar())), true, cn);
-//                                        if ((Boolean) resultado5.get(0) == true) {
-//
-//                                            request.setAttribute("error", resultado5.get(1));
-//                                            return mapping.findForward("error");
-//
-//                                        }
-//
-//                                    }
-//
-//                                } else {
-//
-//                                    request.setAttribute("error", resultado4.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//                            }
-//
-//                        }
-//
-//                        // Elimina si fue eliminada alguna caracteristica
-//                        if (GR_Eliminados != null) {
-//
-//                            for (int i = 0; i < GR_Eliminados.size(); i++) {
-//
-//                                buCaracteristicaPlantilla1 = (BeanCaracteristicaPlantilla) GR_Eliminados.get(i);
-//
-//                                ArrayList<Object> resultado6;
-//                                resultado6 = (ArrayList) grCaract.EliminaCaracteristicaPlantilla(Integer.parseInt(String.valueOf(buCaracteristicaPlantilla1.getIdCaracteristicaPlantilla())), fo.getIdPlantillaDispositivo(), true, cn);
-//                                if ((Boolean) resultado6.get(0) == true) {
-//
-//                                    request.setAttribute("error", resultado6.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//
-//                            }
-//                        }
-//
-//                    }
-//
-//                    //Se graba si hay plantillas hijas nuevas
-//                    if (GR_PlantillaHija != null) {
-//
-//                        BeanPlantillaDispositivoHija buPlantillaDispositivoHija1;
-//
-//                        for (int i = 0; i < GR_PlantillaHija.size(); i++) {
-//
-//                            buPlantillaDispositivoHija1 = (BeanPlantillaDispositivoHija) GR_PlantillaHija.get(i);
-//
-//                            if (buPlantillaDispositivoHija1.getIdPlantillaDispositivo() == null) {
-//                                ArrayList<Object> resultado3;
-//                                resultado3 = (ArrayList) grHija.IngresaPlantillaDispositivoHija(fo.getIdPlantillaDispositivo(), Integer.parseInt(String.valueOf(buPlantillaDispositivoHija1.getIdPlantillaDispositivoHija())), true, cn);
-//                                if ((Boolean) resultado3.get(0) == true) {
-//
-//                                    request.setAttribute("error", resultado3.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//                            }
-//
-//                        }
-//
-//                        // Elimina si fue eliminada alguna caracteristica
-//                        if (GR_EliminadosHija != null) {
-//
-//                            for (int i = 0; i < GR_EliminadosHija.size(); i++) {
-//
-//                                buPlantillaDispositivoHija1 = (BeanPlantillaDispositivoHija) GR_EliminadosHija.get(i);
-//
-//                                ArrayList<Object> resultado6;
-//                                resultado6 = (ArrayList) grHija.EliminaPlantillaDispositivoHija(fo.getIdPlantillaDispositivo(), Integer.parseInt(String.valueOf(buPlantillaDispositivoHija1.getIdPlantillaDispositivoHija())), true, cn);
-//                                if ((Boolean) resultado6.get(0) == true) {
-//
-//                                    request.setAttribute("error", resultado6.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//
-//                            }
-//                        }
-//
-//                    }
-//
-//                    ArrayList<Object> resultado7;
-//                    resultado7 = (ArrayList) gr.ModificaPlantillaDispositivo(fo, true, cn);
-//                    if ((Boolean) resultado7.get(0) == false) {
-//
-//                        ArrayList<Object> resultado8;
-//                        resultado8 = (ArrayList) grCaract.commint(cn);
-//                        if ((Boolean) resultado8.get(0) == false) {
-//
-//                            ArrayList<Object> resultado9;
-//                            resultado9 = (ArrayList) grCaract.autoCommint(true, cn);
-//                            if ((Boolean) resultado9.get(0) == false) {
-//
-//                                ArrayList<Object> resultado10;
-//                                resultado10 = grCaract.MostrarCaracteristicaPlantilla(fo.getIdPlantillaDispositivo(), false, null);
-//                                if ((Boolean) resultado10.get(0) == false) {
-//
-//                                    GR_CARACTERISTICAPLANTILLA = (ArrayList) resultado10.get(1);
-//                                    session.setAttribute("GR_CARACTERISTICAPLANTILLA", GR_CARACTERISTICAPLANTILLA);
-//                                    session.setAttribute("GR_Eliminados", null);
-//                                    session.setAttribute("GR_EliminadosHija", null);
-//
-//                                    request.setAttribute("respuesta", "Registro modificado correctamente.");
-//                                    System.out.println("Action Modicar Plantilla Dispositivo");
-//
-            return mapping.findForward("ok");
-//
-//                                } else {
-//
-//                                    request.setAttribute("error", resultado10.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//                            } else {
-//
-//                                request.setAttribute("error", resultado9.get(1));
-//                                return mapping.findForward("error");
-//
-//                            }
-//
-//                        } else {
-//
-//                            request.setAttribute("error", resultado8.get(1));
-//                            return mapping.findForward("error");
-//
-//                        }
-//
-//                    } else {
-//
-//                        request.setAttribute("error", resultado7.get(1));
-//                        return mapping.findForward("error");
-//
-//                    }
-//
-//                } else {
-//
-//                    request.setAttribute("error", resultado2.get(1));
-//                    return mapping.findForward("error");
-//
-//                }
-//
-//            } else {
-//
-//                request.setAttribute("error", resultado.get(1));
-//                return mapping.findForward("error");
-//
-//            }
 
-        } else if (fo.getOp().equals("eliminar")) {
-            System.out.println("Eliminar ActionDO");
+            ArrayList<Object> resultado = new ArrayList<Object>();
+            Connection cn = null;
+            resultado = gr.ObtenerConexion();
+            if ((Boolean) resultado.get(0) == false) {
 
-//            ArrayList<Object> resultado;
-//            resultado = (ArrayList) grCaract.ObtenerConexion();
-//            if ((Boolean) resultado.get(0) == false) {
-//
-//                Connection cn = (Connection) resultado.get(1);
-//
-//                ArrayList<Object> resultado2;
-//                resultado2 = (ArrayList) grCaract.autoCommint(false, cn);
-//                if ((Boolean) resultado2.get(0) == false) {
+                cn = (Connection) resultado.get(1);
+                ArrayList<Object> resultado1 = new ArrayList<Object>();
+                resultado1 = gr.autoCommint(false, cn);
+                if ((Boolean) resultado1.get(0) == false) {
 
-            ArrayList<Object> resultado3;
-            resultado3 = (ArrayList) gr.EliminaDO(fo, false, null);
-//                    resultado3 = (ArrayList) gr.EliminaPlantillaDispositivo(fo, true, cn);
+                    ArrayList<Object> resultado2 = new ArrayList<Object>();
+                    resultado2 = gr.ModificaFMM(fo, true, cn);
+                    if ((Boolean) resultado2.get(0) == false) {
 
-            if ((Boolean) resultado3.get(0) == false) {
+                        ArrayList<Object> resultado3 = new ArrayList<Object>();
+                        resultado3 = gA.BuscarFormulario("fmm", true, cn);
+                        if ((Boolean) resultado3.get(0) == false) {
 
-//                        ArrayList<Object> resultado4;
-//                        resultado4 = (ArrayList) grCaract.EliminaCaracteristicaPlantilla(Integer.valueOf(fo.getIdPlantillaDispositivo()), true, cn);
-//
-//                        if ((Boolean) resultado4.get(0) == false) {
-//
-//                            ArrayList<Object> resultado5;
-//                            resultado5 = (ArrayList) grHija.EliminaPlantillaDispositivoHija(Integer.valueOf(fo.getIdPlantillaDispositivo()), true, cn);
-//
-//                            if ((Boolean) resultado5.get(0) == false) {
-//
-//                                ArrayList<Object> resultado6;
-//                                resultado6 = (ArrayList) grCaract.commint(cn);
-//
-//                                if ((Boolean) resultado6.get(0) == false) {
-//
-//                                    ArrayList<Object> resultado7;
-//                                    resultado7 = (ArrayList) grCaract.autoCommint(true, cn);
-//
-//                                    if ((Boolean) resultado7.get(0) == false) {
+                            ArrayList<Object> resultado4 = new ArrayList<Object>();
 
-                request.setAttribute("getIdFactura", "");
-                request.setAttribute("getIdEntidad", "");
-                request.setAttribute("getNumFactura", "");
-                request.setAttribute("getFecha", "");
-                request.setAttribute("getTotal", "");
+                            //valida si hubo un cambio en algun campo
+                            String NIdFMMs = String.valueOf(fo.getIdFMMs());
+                            String NFMM = fo.getFMM();
+                            String NCliente = fo.getCliente();
+                            String NPedido = fo.getPedido();
+                            String NLote = fo.getLote();
+                            String AIdFMMs = session.getAttribute("getFMMIdFMMs").toString();
+                            String AFMM = session.getAttribute("getFMMFMM").toString();
+                            String ACliente = session.getAttribute("getFMMCliente").toString();
+                            String APedido = session.getAttribute("getFMMPedido").toString();
+                            String ALote = session.getAttribute("getFMMLote").toString();
+                            String valor_anterior = "";
+                            String valor_nuevo = "";
+                            if (NIdFMMs.equals(AIdFMMs) == false) {
+                                valor_nuevo = "id=" + NIdFMMs;
+                                valor_anterior = "id=" + AIdFMMs;
+                            }
+                            if (NFMM.equals(AFMM) == false) {
+                                if (!valor_nuevo.equals("")) {
+                                    valor_nuevo = valor_nuevo + "&";
+                                    valor_anterior = valor_anterior + "&";
+                                }
+                                valor_nuevo = valor_nuevo + "fmm=" + NFMM;
+                                valor_anterior = valor_anterior + "fmm=" + AFMM;
+                            }
+                            if (NCliente.equals(ACliente) == false) {
+                                if (!valor_nuevo.equals("")) {
+                                    valor_nuevo = valor_nuevo + "&";
+                                    valor_anterior = valor_anterior + "&";
+                                }
+                                valor_nuevo = valor_nuevo + "cliente=" + NCliente;
+                                valor_anterior = valor_anterior + "ciente=" + ACliente;
+                            }
+                            if (NPedido.equals(APedido) == false) {
+                                if (!valor_nuevo.equals("")) {
+                                    valor_nuevo = valor_nuevo + "&";
+                                    valor_anterior = valor_anterior + "&";
+                                }
+                                valor_nuevo = valor_nuevo + "pedido=" + NPedido;
+                                valor_anterior = valor_anterior + "pedido=" + APedido;
+                            }
+                            if (NLote.equals(ALote) == false) {
+                                if (!valor_nuevo.equals("")) {
+                                    valor_nuevo = valor_nuevo + "&";
+                                    valor_anterior = valor_anterior + "&";
+                                }
+                                valor_nuevo = valor_nuevo + "lote=" + NLote;
+                                valor_anterior = valor_anterior + "lote=" + ALote;
+                            }
 
-                request.setAttribute("respuesta", "Registro eliminado correctamente.");
-                System.out.println("Action Eliminar Factura");
+                            resultado4 = gA.IngresaAuditoria("Modificar", valor_anterior, valor_nuevo, fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdFMMs()), true, cn);
+                            if ((Boolean) resultado4.get(0) == false) {
 
-                return mapping.findForward("ok");
+                                ArrayList<Object> resultado5 = new ArrayList<Object>();
+                                resultado5 = gr.commint(cn);
+                                if ((Boolean) resultado5.get(0) == false) {
 
-//                                    } else {
-//
-//                                        request.setAttribute("error", resultado7.get(1));
-//                                        return mapping.findForward("error");
-//
-//                                    }
-//
-//                                } else {
-//
-//                                    request.setAttribute("error", resultado6.get(1));
-//                                    return mapping.findForward("error");
-//
-//                                }
-//
-//                            } else {
-//
-//                                request.setAttribute("error", resultado5.get(1));
-//                                return mapping.findForward("error");
-//
-//                            }
-//
-//                        } else {
-//
-//                            request.setAttribute("error", resultado4.get(1));
-//                            return mapping.findForward("error");
-//
-//                        }
+                                    ArrayList<Object> resultado6 = new ArrayList<Object>();
+                                    resultado6 = gr.autoCommint(true, cn);
+                                    if ((Boolean) resultado6.get(0) == false) {
+
+                                        ArrayList<Object> resultado7 = new ArrayList<Object>();
+                                        resultado7 = gr.MostrarFMMFormulario(fo.getIdFMMs(), false, null);
+                                        if ((Boolean) resultado7.get(0) == false) {
+
+                                            request.setAttribute("getIdFMMs", gr.getIdFMMs());
+                                            request.setAttribute("getFMM", gr.getFMM());
+                                            request.setAttribute("getCliente", gr.getCliente());
+                                            request.setAttribute("getPedido", gr.getPedido());
+                                            request.setAttribute("getLote", gr.getLote());
+                                            request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
+                                            request.setAttribute("getNombreUsu", gr.getNombreUsu());
+                                            //para validar si se modifico un campo
+                                            session.setAttribute("getFMMIdFMMs", gr.getIdFMMs());
+                                            session.setAttribute("getFMMFMM", gr.getFMM());
+                                            session.setAttribute("getFMMCliente", gr.getCliente());
+                                            session.setAttribute("getFMMPedido", gr.getPedido());
+                                            session.setAttribute("getFMMLote", gr.getLote());
+
+                                            request.setAttribute("respuesta", "Registro modificado correctamente.");
+                                            System.out.println("Action Modicar FMM");
+                                            return mapping.findForward("ok");
+
+                                        } else {
+
+                                            request.setAttribute("error", resultado7.get(1));
+                                            return mapping.findForward("error");
+
+                                        }
+
+                                    } else {
+
+                                        request.setAttribute("error", resultado6.get(1));
+                                        return mapping.findForward("error");
+
+                                    }
+
+                                } else {
+
+                                    request.setAttribute("error", resultado5.get(1));
+                                    return mapping.findForward("error");
+
+                                }
+
+                            } else {
+
+                                request.setAttribute("error", resultado4.get(1));
+                                return mapping.findForward("error");
+
+                            }
+
+                        } else {
+
+                            request.setAttribute("error", resultado3.get(1));
+                            return mapping.findForward("error");
+
+                        }
+
+                    } else {
+
+                        request.setAttribute("error", resultado2.get(1));
+                        return mapping.findForward("error");
+
+                    }
+
+                } else {
+
+                    request.setAttribute("error", resultado1.get(1));
+                    return mapping.findForward("error");
+
+                }
 
             } else {
 
-                request.setAttribute("error", resultado3.get(1));
+                request.setAttribute("error", resultado.get(1));
                 return mapping.findForward("error");
 
             }
 
-//                } else {
-//
-//                    request.setAttribute("error", resultado2.get(1));
-//                    return mapping.findForward("error");
-//
-//                }
-//
-//            } else {
-//
-//                request.setAttribute("error", resultado.get(1));
-//                return mapping.findForward("error");
-//
-//            }
+        } else if (fo.getOp().equals("eliminar")) {
+
+            request.setAttribute("getIdFMMs", fo.getIdFMMs());
+            request.setAttribute("getFMM", fo.getFMM());
+            request.setAttribute("getCliente", fo.getCliente());
+            request.setAttribute("getPedido", fo.getPedido());
+            request.setAttribute("getLote", fo.getLote());
+            request.setAttribute("getFechaModificacion", "");
+            request.setAttribute("getNombreUsu", "");
+
+            ArrayList<Object> resultado = new ArrayList<Object>();
+            Connection cn = null;
+            resultado = gr.ObtenerConexion();
+            if ((Boolean) resultado.get(0) == false) {
+
+                cn = (Connection) resultado.get(1);
+                ArrayList<Object> resultado1 = new ArrayList<Object>();
+                resultado1 = gr.autoCommint(false, cn);
+                if ((Boolean) resultado1.get(0) == false) {
+
+                    ArrayList<Object> resultado2 = new ArrayList<Object>();
+                    resultado2 = gr.EliminaFMM(fo, true, cn);
+                    if ((Boolean) resultado2.get(0) == false) {
+
+                        ArrayList<Object> resultado3 = new ArrayList<Object>();
+                        resultado3 = gA.BuscarFormulario("fmm", true, cn);
+                        if ((Boolean) resultado3.get(0) == false) {
+
+                            ArrayList<Object> resultado4 = new ArrayList<Object>();
+                            String valor_anterior = "id=" + fo.getIdFMMs() + "&fmm=" + fo.getFMM() + "&cliente=" + fo.getCliente() + "&pedido=" + fo.getPedido() + "&lote=" + fo.getLote();
+                            resultado4 = gA.IngresaAuditoria("Eliminar", valor_anterior, "", fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdFMMs()), true, cn);
+                            if ((Boolean) resultado4.get(0) == false) {
+
+                                ArrayList<Object> resultado5 = new ArrayList<Object>();
+                                resultado5 = gr.commint(cn);
+                                if ((Boolean) resultado5.get(0) == false) {
+
+                                    ArrayList<Object> resultado6 = new ArrayList<Object>();
+                                    resultado6 = gr.autoCommint(true, cn);
+                                    if ((Boolean) resultado6.get(0) == false) {
+
+                                        request.setAttribute("getIdFMMs", "");
+                                        request.setAttribute("getFMM", "");
+                                        request.setAttribute("getCliente", "");
+                                        request.setAttribute("getPedido", "");
+                                        request.setAttribute("getLote", "");
+                                        request.setAttribute("getNombreUsu", "");
+                                        request.setAttribute("getFechaModificacion", "");
+
+                                        request.setAttribute("respuesta", "Registro eliminado correctamente.");
+                                        System.out.println("Action Eliminar FMM");
+
+                                        return mapping.findForward("ok");
+
+                                    } else {
+
+                                        request.setAttribute("error", resultado6.get(1));
+                                        return mapping.findForward("error");
+
+                                    }
+
+                                } else {
+
+                                    request.setAttribute("error", resultado5.get(1));
+                                    return mapping.findForward("error");
+
+                                }
+
+                            } else {
+
+                                request.setAttribute("error", resultado4.get(1));
+                                return mapping.findForward("error");
+
+                            }
+
+                        } else {
+
+                            request.setAttribute("error", resultado3.get(1));
+                            return mapping.findForward("error");
+
+                        }
+
+                    } else {
+
+                        request.setAttribute("error", resultado2.get(1));
+                        return mapping.findForward("error");
+
+                    }
+
+                } else {
+
+                    request.setAttribute("error", resultado1.get(1));
+                    return mapping.findForward("error");
+
+                }
+
+            } else {
+
+                request.setAttribute("error", resultado.get(1));
+                return mapping.findForward("error");
+
+            }
 
         } else {
-            System.out.println("Volver ActionDO");
 
             request.setAttribute("getOp", "buscar");
             return mapping.findForward("atras");
