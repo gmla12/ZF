@@ -7,7 +7,7 @@
 
 <%@page import="java.lang.Object"%>
 <%@page import="java.util.ArrayList"%>
-<%@page import="forms.bean.BeanFMM"%>
+<%@page import="forms.bean.BeanBL"%>
 <%
     String usuario = "";
     HttpSession sesionOk = request.getSession();
@@ -25,7 +25,7 @@
     int total_pages = 0;
     String op = request.getParameter("op");
     if (op.equals("bus")) {
-        ArrayList<Object> GR_AUT = (ArrayList) session.getAttribute("GR_FMM");
+        ArrayList<Object> GR_AUT = (ArrayList) session.getAttribute("GR_BL");
         int intpage = new Integer(request.getParameter("page"));
         int limit = new Integer(request.getParameter("rows"));
 
@@ -36,7 +36,7 @@
          * -----------------------------------
          */
 
-        BeanFMM buFMM;
+        BeanBL buBL;
 
         /*
          * -----------------------------------
@@ -97,17 +97,19 @@
                 json = json + ",";
             }
 
-            buFMM = new BeanFMM();
-            buFMM = (BeanFMM) GR_AUT.get(i);
+            buBL = new BeanBL();
+            buBL = (BeanBL) GR_AUT.get(i);
 
             json = json + "\n{";
             json = json + "\"id\":\"" + i + "\",";
-            json = json + "\"cell\":[\"" + buFMM.getIdFMMs() + "\"";
-            json = json + ",\"" + buFMM.getFMM() + "\"";
-            json = json + ",\"" + buFMM.getCliente() + "\"";
-            json = json + ",\"" + buFMM.getPedido() + "\"";
-            json = json + ",\"" + buFMM.getLote() + "\"";
-            String aux2 = "<a href='javascript:modifica(&quot;" + buFMM.getIdFMMs() + "&quot;)'>Modificar</a>";
+            json = json + "\"cell\":[\"" + buBL.getIdBLs() + "\"";
+            json = json + ",\"" + buBL.getBL() + "\"";
+            json = json + ",\"" + buBL.getCliente() + "\"";
+            json = json + ",\"" + buBL.getMotonave() + "\"";
+            json = json + ",\"" + buBL.getEtaFecha() + " " + buBL.getEtaHora() + "\"";
+            json = json + ",\"" + buBL.getLote() + "\"";
+            json = json + ",\"" + buBL.getFMM() + "\"";
+            String aux2 = "<a href='javascript:modifica(&quot;" + buBL.getIdBLs() + "&quot;)'>Modificar</a>";
             json = json + ",\"" + aux2 + "\"]";
             json = json + "}";
 

@@ -4,12 +4,12 @@
  */
 package actions;
 
-import forms.FMMOpForm;
+import forms.BLOpForm;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import modelo.GestionFMM;
+import modelo.GestionBL;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -19,7 +19,7 @@ import org.apache.struts.action.ActionMapping;
  *
  * @author mario
  */
-public class ActionFMMOp extends Action {
+public class ActionBLOp extends Action {
 
     /**
      * Processes requests for both HTTP
@@ -31,7 +31,7 @@ public class ActionFMMOp extends Action {
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
      */
-    public ActionFMMOp() {
+    public ActionBLOp() {
 
         super();
 
@@ -44,12 +44,12 @@ public class ActionFMMOp extends Action {
             HttpServletResponse response)
             throws Exception {
 
-        FMMOpForm fo = (FMMOpForm) form;
-        GestionFMM gr = new GestionFMM();
+        BLOpForm fo = (BLOpForm) form;
+        GestionBL gr = new GestionBL();
         HttpSession session = request.getSession();
 
         System.out.println("********************************************");
-        System.out.println("*********  ActionOpFMM  **********");
+        System.out.println("*********  ActionOpBL  **********");
         System.out.println("********************************************");
         request.setAttribute("respuesta", "");
 
@@ -63,22 +63,28 @@ public class ActionFMMOp extends Action {
             if (fo.getOp().equals("modificar")) {
 
                 ArrayList<Object> resultado = new ArrayList<Object>();
-                resultado = gr.MostrarFMMFormulario(Integer.parseInt(fo.getId()), false, null);
+                resultado = gr.MostrarBLFormulario(Integer.parseInt(fo.getId()), false, null);
                 if ((Boolean) resultado.get(0) == false) {
 
-                    request.setAttribute("getIdFMMs", gr.getIdFMMs());
-                    request.setAttribute("getFMM", gr.getFMM());
+                    request.setAttribute("getIdBLs", gr.getIdBLs());
+                    request.setAttribute("getBL", gr.getBL());
                     request.setAttribute("getCliente", gr.getCliente());
-                    request.setAttribute("getPedido", gr.getPedido());
+                    request.setAttribute("getMotonave", gr.getMotonave());
+                    request.setAttribute("getEtaFecha", gr.getEtaFecha());
+                    request.setAttribute("getEtaHora", gr.getEtaHora());
                     request.setAttribute("getLote", gr.getLote());
+                    request.setAttribute("getFMM", gr.getFMM());
                     request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
                     request.setAttribute("getNombreUsu", gr.getNombreUsu());
                     //para validar si se modifico un campo
-                    session.setAttribute("getFMMIdFMMs", gr.getIdFMMs());
-                    session.setAttribute("getFMMFMM", gr.getFMM());
-                    session.setAttribute("getFMMCliente", gr.getCliente());
-                    session.setAttribute("getFMMPedido", gr.getPedido());
-                    session.setAttribute("getFMMLote", gr.getLote());
+                    session.setAttribute("getBLIdBLs", gr.getIdBLs());
+                    session.setAttribute("getBLBL", gr.getBL());
+                    session.setAttribute("getBLCliente", gr.getCliente());
+                    session.setAttribute("getBLMotonave", gr.getMotonave());
+                    session.setAttribute("getBLEtaFecha", gr.getEtaFecha());
+                    session.setAttribute("getBLEtaHora", gr.getEtaHora());
+                    session.setAttribute("getBLLote", gr.getLote());
+                    session.setAttribute("getBLFMM", gr.getFMM());
 
                     return mapping.findForward("modificar");
 
@@ -92,22 +98,32 @@ public class ActionFMMOp extends Action {
             } else if (fo.getOp().equals("buscar")) {
 
                 if (fo.getbCliente() == null) {
-                    fo.setbFMM((String) session.getAttribute("getbFMM"));
+                    fo.setbBL((String) session.getAttribute("getbBL"));
                     fo.setbCliente((String) session.getAttribute("getbCliente"));
-                    fo.setbPedido((String) session.getAttribute("getbPedido"));
+                    fo.setbMotonave((String) session.getAttribute("getbMotonave"));
+                    fo.setbEtaDFecha((String) session.getAttribute("getbEtaDFecha"));
+                    fo.setbEtaDHora((String) session.getAttribute("getbEtaDHora"));
+                    fo.setbEtaHFecha((String) session.getAttribute("getbEtaHFecha"));
+                    fo.setbEtaHHora((String) session.getAttribute("getbEtaHHora"));
                     fo.setbLote((String) session.getAttribute("getbLote"));
+                    fo.setbFMM((String) session.getAttribute("getbFMM"));
                 }
 
                 ArrayList<Object> resultado = new ArrayList<Object>();
-                resultado = gr.MostrarFMMOP(fo, false, null);
+                resultado = gr.MostrarBLOP(fo, false, null);
                 if ((Boolean) resultado.get(0) == false) {
 
-                    session.setAttribute("getbFMM", fo.getbFMM());
+                    session.setAttribute("getbBL", fo.getbBL());
                     session.setAttribute("getbCliente", fo.getbCliente());
-                    session.setAttribute("getbPedido", fo.getbPedido());
+                    session.setAttribute("getbMotonave", fo.getbMotonave());
+                    session.setAttribute("getbEtaDFecha", fo.getbEtaDFecha());
+                    session.setAttribute("getbEtaDHora", fo.getbEtaDHora());
+                    session.setAttribute("getbEtaHFecha", fo.getbEtaHFecha());
+                    session.setAttribute("getbEtaHHora", fo.getbEtaHHora());
                     session.setAttribute("getbLote", fo.getbLote());
+                    session.setAttribute("getbFMM", fo.getbFMM());
 
-                    session.setAttribute("GR_FMM", resultado.get(1));
+                    session.setAttribute("GR_BL", resultado.get(1));
                     return mapping.findForward("ok");
 
                 } else {
@@ -119,11 +135,14 @@ public class ActionFMMOp extends Action {
 
             } else {
 
-                request.setAttribute("getIdFMMs", "");
-                request.setAttribute("getFMM", "");
+                request.setAttribute("getIdBLs", "");
+                request.setAttribute("getBL", "");
                 request.setAttribute("getCliente", "");
-                request.setAttribute("getPedido", "");
+                request.setAttribute("getMotonave", "");
+                request.setAttribute("getEtaFecha", "");
+                request.setAttribute("getEtaHora", "");
                 request.setAttribute("getLote", "");
+                request.setAttribute("getFMM", "");
                 request.setAttribute("getNombreUsu", "");
                 request.setAttribute("getFechaModificacion", "");
 
@@ -133,20 +152,30 @@ public class ActionFMMOp extends Action {
 
         } else {
 
-            session.setAttribute("getbFMM", "");
+            session.setAttribute("getbBL", "");
             session.setAttribute("getbCliente", "");
-            session.setAttribute("getbPedido", "");
+            session.setAttribute("getbMotonave", "");
+            session.setAttribute("getbEtaDFecha", "");
+            session.setAttribute("getbEtaDHora", "");
+            session.setAttribute("getbEtaHFecha", "");
+            session.setAttribute("getbEtaHHora", "");
             session.setAttribute("getbLote", "");
-            fo.setbFMM("");
+            session.setAttribute("getbFMM", "");
+            fo.setbBL("");
             fo.setbCliente("");
-            fo.setbPedido("");
+            fo.setbMotonave("");
+            fo.setbEtaDFecha("");
+            fo.setbEtaDHora("");
+            fo.setbEtaHFecha("");
+            fo.setbEtaHHora("");
             fo.setbLote("");
+            fo.setbFMM("");
 
             ArrayList<Object> resultado = new ArrayList<Object>();
-            resultado = gr.MostrarFMMOP(fo, false, null);
+            resultado = gr.MostrarBLOP(fo, false, null);
             if ((Boolean) resultado.get(0) == false) {
 
-                session.setAttribute("GR_FMM", resultado.get(1));
+                session.setAttribute("GR_BL", resultado.get(1));
                 return mapping.findForward("ok");
 
             } else {

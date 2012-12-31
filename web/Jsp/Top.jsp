@@ -208,9 +208,9 @@
                     addTab("DOs", "OpDO.do");
                 }); 
                 
-                $('#fmm').click(function(e) {
+                $('#bl').click(function(e) {
                     e.preventDefault();
-                    addTab("FMMs", "OpFMM.do");
+                    addTab("BLs", "OpBL.do");
                 }); 
                 
                 $('#cerrar').click(function(e) {
@@ -261,7 +261,7 @@
                     <ul>
                         <li><a id="do" href='#'><span>DOs</span></a></li>
                         <li><a id="factura" href='#'><span>Factura</span></a></li>
-                        <li><a id="fmm" href='#'><span>FMMs</span></a></li>
+                        <li><a id="bl" href='#'><span>BLs</span></a></li>
                     </ul>
                 </li>
                 <li class='has-sub'><a href='#'><span>Seguridad</span></a>

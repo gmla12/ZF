@@ -4,23 +4,26 @@
  */
 package modelo;
 
-import forms.FMMForm;
-import forms.FMMOpForm;
-import forms.bean.BeanFMM;
+import forms.BLForm;
+import forms.BLOpForm;
+import forms.bean.BeanBL;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import util.ConeccionMySql;
 
 /**
  *
  * @author Mario
  */
-public class GestionFMM extends ConeccionMySql {
+public class GestionBL extends ConeccionMySql {
 
     Connection cn = null;
     Statement st = null;
 
-    public ArrayList<Object> IngresaFMM(FMMForm f, Boolean transac, Connection tCn) {
+    public ArrayList<Object> IngresaBL(BLForm f, Boolean transac, Connection tCn) {
 
         int mod = -99;
         ArrayList<Object> resultado = new ArrayList<Object>();
@@ -51,12 +54,19 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            psInsertar = cn.prepareStatement("insert into FMMs (fmm, cliente, pedido, lote, susuarios_id, fecha_modificacion) values (?,?,?,?,?,now())", PreparedStatement.RETURN_GENERATED_KEYS);
-            psInsertar.setString(1, f.getFMM());
+            psInsertar = cn.prepareStatement("insert into BLs (bl, cliente, motonave, eta, lote, fmm, susuarios_id, fecha_modificacion) values (?,?,?,?,?,?,?,now())", PreparedStatement.RETURN_GENERATED_KEYS);
+            psInsertar.setString(1, f.getBL());
             psInsertar.setString(2, f.getCliente());
-            psInsertar.setString(3, f.getPedido());
-            psInsertar.setString(4, f.getLote());
-            psInsertar.setInt(5, f.getIdUsu());
+            psInsertar.setString(3, f.getMotonave());
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            Date dtf = sdf.parse(f.getEtaFecha());
+            Date dth = sdf.parse(f.getEtaHora());
+            long t = dtf.getTime() + dth.getTime();
+            java.sql.Date dts = new java.sql.Date(t);
+            psInsertar.setDate(4, dts);
+            psInsertar.setString(5, f.getLote());
+            psInsertar.setString(6, f.getFMM());
+            psInsertar.setInt(7, f.getIdUsu());
             psInsertar.executeUpdate(); // Se ejecuta la inserción.
 
             mod = psInsertar.getUpdateCount();
@@ -87,16 +97,16 @@ public class GestionFMM extends ConeccionMySql {
         }
 
     }
-    private ArrayList<Object> GR_FMM;
+    private ArrayList<Object> GR_BL;
 
-    public ArrayList<Object> MostrarFMM(Boolean transac, Connection tCn) {
+    public ArrayList<Object> MostrarBL(Boolean transac, Connection tCn) {
 
         ArrayList<Object> resultado = new ArrayList<Object>();
         PreparedStatement psSelectConClave = null;
 
         try {
 
-            GR_FMM = new ArrayList<Object>();
+            GR_BL = new ArrayList<Object>();
 
             if (transac == false) { //si no es una transaccion busca una nueva conexion
 
@@ -121,20 +131,43 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            psSelectConClave = cn.prepareStatement("SELECT p.idFMMs, p.FMM, p.cliente, p.pedido, p.lote FROM FMMs p");
+            psSelectConClave = cn.prepareStatement("SELECT p.idBLs, p.BL, p.cliente, p.motonave, p.eta, p.lote, p.fmm FROM BLs p");
             ResultSet rs = psSelectConClave.executeQuery();
 
-            BeanFMM bu;
+            BeanBL bu;
             while (rs.next()) {
-                bu = new BeanFMM();
+                bu = new BeanBL();
 
-                bu.setIdFMMs(rs.getObject("p.idFMMs"));
-                bu.setFMM(rs.getObject("p.FMM"));
+                bu.setIdBLs(rs.getObject("p.idBLs"));
+                bu.setBL(rs.getObject("p.BL"));
                 bu.setCliente(rs.getObject("p.cliente"));
-                bu.setPedido(rs.getObject("p.pedido"));
+                bu.setMotonave(rs.getObject("p.motonave"));
+                Date dtt = (Date) rs.getObject("p.eta");
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dtt);
+                bu.setEtaFecha(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(calendar.get(Calendar.MONTH) + 1) + "/" + String.valueOf(calendar.get(Calendar.YEAR)));
+                int hora24 = calendar.get(Calendar.HOUR_OF_DAY); //hora en formato 24hs
+                int minutos = calendar.get(Calendar.MINUTE);
+                String hh;
+                String h = "";
+                String h2 = "";
+                if (hora24 > 12) {
+                    hora24 = hora24 - 12;
+                    hh = "PM";
+                } else {
+                    hh = "AM";
+                }
+                if (hora24 < 10) {
+                    h = "0";
+                }
+                if (minutos < 10) {
+                    h2 = "0";
+                }
+                bu.setEtaHora(h + String.valueOf(hora24) + ":" + h2 + minutos + " " + hh);
                 bu.setLote(rs.getObject("p.lote"));
+                bu.setFMM(rs.getObject("p.fmm"));
 
-                GR_FMM.add(bu);
+                GR_BL.add(bu);
 
 
             }
@@ -146,7 +179,7 @@ public class GestionFMM extends ConeccionMySql {
             }
 
             resultado.add(false); //si no hubo un error asigna false
-            resultado.add(GR_FMM); // y registros consultados
+            resultado.add(GR_BL); // y registros consultados
 
         } catch (SQLException e) {
 
@@ -166,14 +199,14 @@ public class GestionFMM extends ConeccionMySql {
 
     }
 
-    public ArrayList<Object> MostrarFMMOP(FMMOpForm f, Boolean transac, Connection tCn) {
+    public ArrayList<Object> MostrarBLOP(BLOpForm f, Boolean transac, Connection tCn) {
 
         ArrayList<Object> resultado = new ArrayList<Object>();
         PreparedStatement psSelectConClave = null;
 
         try {
 
-            GR_FMM = new ArrayList<Object>();
+            GR_BL = new ArrayList<Object>();
 
             if (transac == false) { //si no es una transaccion busca una nueva conexion
 
@@ -198,11 +231,11 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            String query = "SELECT p.idFMMs, p.FMM, p.cliente, p.pedido, p.lote ";
-            query += "FROM FMMs p ";
+            String query = "SELECT p.idBLs, p.BL, p.cliente, p.motonave, p.eta, p.lote, p.fmm ";
+            query += "FROM BLs p ";
             String query2 = "";
-            if (f.getbFMM().isEmpty() != true) {
-                query2 = "p.FMM LIKE CONCAT('%',?,'%')";
+            if (f.getbBL().isEmpty() != true) {
+                query2 = "p.BL LIKE CONCAT('%',?,'%')";
             }
             if (f.getbCliente().isEmpty() != true) {
                 if (query2.isEmpty() != true) {
@@ -210,11 +243,23 @@ public class GestionFMM extends ConeccionMySql {
                 }
                 query2 += "p.cliente LIKE CONCAT('%',?,'%')";
             }
-            if (f.getbPedido().isEmpty() != true) {
+            if (f.getbMotonave().isEmpty() != true) {
                 if (query2.isEmpty() != true) {
                     query2 += "AND ";
                 }
-                query2 += "p.pedido LIKE CONCAT('%',?,'%')";
+                query2 += "p.motonave LIKE CONCAT('%',?,'%')";
+            }
+            if (f.getbEtaDFecha().isEmpty() != true) {
+                if (query2.isEmpty() != true) {
+                    query2 += "AND ";
+                }
+                query2 += "p.eta >= ?";
+            }
+            if (f.getbEtaHFecha().isEmpty() != true) {
+                if (query2.isEmpty() != true) {
+                    query2 += "AND ";
+                }
+                query2 += "p.eta <= ?";
             }
             if (f.getbLote().isEmpty() != true) {
                 if (query2.isEmpty() != true) {
@@ -222,76 +267,103 @@ public class GestionFMM extends ConeccionMySql {
                 }
                 query2 += "p.lote LIKE CONCAT('%',?,'%')";
             }
+            if (f.getbFMM().isEmpty() != true) {
+                if (query2.isEmpty() != true) {
+                    query2 += "AND ";
+                }
+                query2 += "p.fmm LIKE CONCAT('%',?,'%')";
+            }
             if (query2.isEmpty() != true) {
                 query += "WHERE " + query2;
             }
+
             psSelectConClave = cn.prepareStatement(query);
+            int i = 0;
+            if (f.getbBL().isEmpty() != true) {
+                i++;
+                psSelectConClave.setString(i, f.getbBL());
+            }
+            if (f.getbCliente().isEmpty() != true) {
+                i++;
+                psSelectConClave.setString(i, f.getbCliente());
+            }
+            if (f.getbMotonave().isEmpty() != true) {
+                i++;
+                psSelectConClave.setString(i, f.getbMotonave());
+            }
+            if (f.getbEtaDFecha().isEmpty() != true) {
+                java.sql.Timestamp momentoTimestamp;
+                if (f.getbEtaDHora().isEmpty() != true) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy h:mm a");
+                    Date dtf = sdf.parse(f.getbEtaDFecha() + " " + f.getbEtaDHora());
+                    momentoTimestamp = new java.sql.Timestamp(dtf.getTime());
+                } else {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    Date dtf = sdf.parse(f.getbEtaDFecha());
+                    momentoTimestamp = new java.sql.Timestamp(dtf.getTime());
+                }
+                i++;
+                psSelectConClave.setTimestamp(i, momentoTimestamp);
+            }
+            if (f.getbEtaHFecha().isEmpty() != true) {
+                java.sql.Timestamp momentoTimestamp;
+                if (f.getbEtaHHora().isEmpty() != true) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy h:mm a");
+                    Date dtf = sdf.parse(f.getbEtaHFecha() + " " + f.getbEtaHHora());
+                    momentoTimestamp = new java.sql.Timestamp(dtf.getTime());
+                } else {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    Date dtf = sdf.parse(f.getbEtaHFecha());
+                    momentoTimestamp = new java.sql.Timestamp(dtf.getTime());
+                }
+                i++;
+                psSelectConClave.setTimestamp(i, momentoTimestamp);
+            }
+            if (f.getbLote().isEmpty() != true) {
+                i++;
+                psSelectConClave.setString(i, f.getbLote());
+            }
             if (f.getbFMM().isEmpty() != true) {
-                psSelectConClave.setString(1, f.getbFMM());
-                if (f.getbCliente().isEmpty() != true) {
-                    psSelectConClave.setString(2, f.getbCliente());
-                    if (f.getbPedido().isEmpty() != true) {
-                        psSelectConClave.setString(3, f.getbPedido());
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(4, f.getbCliente());
-                        }
-                    } else {
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(3, f.getbCliente());
-                        }
-                    }
-                } else {
-                    if (f.getbPedido().isEmpty() != true) {
-                        psSelectConClave.setString(2, f.getbPedido());
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(3, f.getbCliente());
-                        }
-                    } else {
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(2, f.getbCliente());
-                        }
-                    }
-                }
-            } else {
-                if (f.getbCliente().isEmpty() != true) {
-                    psSelectConClave.setString(1, f.getbCliente());
-                    if (f.getbPedido().isEmpty() != true) {
-                        psSelectConClave.setString(2, f.getbPedido());
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(3, f.getbCliente());
-                        }
-                    } else {
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(2, f.getbCliente());
-                        }
-                    }
-                } else {
-                    if (f.getbPedido().isEmpty() != true) {
-                        psSelectConClave.setString(1, f.getbPedido());
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(2, f.getbCliente());
-                        }
-                    } else {
-                        if (f.getbCliente().isEmpty() != true) {
-                            psSelectConClave.setString(1, f.getbCliente());
-                        }
-                    }
-                }
+                i++;
+                psSelectConClave.setString(i, f.getbFMM());
             }
             ResultSet rs = psSelectConClave.executeQuery();
 
-            BeanFMM bu;
+            BeanBL bu;
             while (rs.next()) {
 
-                bu = new BeanFMM();
+                bu = new BeanBL();
 
-                bu.setIdFMMs(rs.getObject("p.idFMMs"));
-                bu.setFMM(rs.getObject("p.FMM"));
+                bu.setIdBLs(rs.getObject("p.idBLs"));
+                bu.setBL(rs.getObject("p.BL"));
                 bu.setCliente(rs.getObject("p.cliente"));
-                bu.setPedido(rs.getObject("p.pedido"));
+                bu.setMotonave(rs.getObject("p.motonave"));
+                Date dtt = (Date) rs.getObject("p.eta");
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dtt);
+                bu.setEtaFecha(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(calendar.get(Calendar.MONTH) + 1) + "/" + String.valueOf(calendar.get(Calendar.YEAR)));
+                int hora24 = calendar.get(Calendar.HOUR_OF_DAY); //hora en formato 24hs
+                int minutos = calendar.get(Calendar.MINUTE);
+                String hh;
+                String h = "";
+                String h2 = "";
+                if (hora24 > 12) {
+                    hora24 = hora24 - 12;
+                    hh = "PM";
+                } else {
+                    hh = "AM";
+                }
+                if (hora24 < 10) {
+                    h = "0";
+                }
+                if (minutos < 10) {
+                    h2 = "0";
+                }
+                bu.setEtaHora(h + String.valueOf(hora24) + ":" + h2 + minutos + " " + hh);
                 bu.setLote(rs.getObject("p.lote"));
+                bu.setFMM(rs.getObject("p.FMM"));
 
-                GR_FMM.add(bu);
+                GR_BL.add(bu);
 
             }
 
@@ -302,7 +374,7 @@ public class GestionFMM extends ConeccionMySql {
             }
 
             resultado.add(false); //si no hubo un error asigna false
-            resultado.add(GR_FMM); // y registros consultados
+            resultado.add(GR_BL); // y registros consultados
 
         } catch (SQLException e) {
 
@@ -322,7 +394,7 @@ public class GestionFMM extends ConeccionMySql {
 
     }
 
-    public ArrayList<Object> ModificaFMM(FMMForm f, Boolean transac, Connection tCn) {
+    public ArrayList<Object> ModificaBL(BLForm f, Boolean transac, Connection tCn) {
 
         int mod = -99;
         ArrayList<Object> resultado = new ArrayList<Object>();
@@ -353,14 +425,19 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            String query = "UPDATE FMMs SET cliente = ?, pedido = ?, lote = ?, susuarios_id=?, fecha_modificacion=now()";
-            query += " WHERE idFMMs = ?";
+            String query = "UPDATE BLs SET cliente = ?, motonave = ?, eta = ?, lote = ?, fmm = ?, susuarios_id=?, fecha_modificacion=now()";
+            query += " WHERE idBLs = ?";
             psUpdate = cn.prepareStatement(query);
             psUpdate.setString(1, f.getCliente());
-            psUpdate.setString(2, f.getPedido());
-            psUpdate.setString(3, f.getLote());
-            psUpdate.setInt(4, f.getIdUsu());
-            psUpdate.setInt(5, f.getIdFMMs());
+            psUpdate.setString(2, f.getMotonave());
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy h:mm a");
+            Date dtf = sdf.parse(f.getEtaFecha() + " " + f.getEtaHora());
+            java.sql.Timestamp momentoTimestamp = new java.sql.Timestamp(dtf.getTime());
+            psUpdate.setTimestamp(3, momentoTimestamp);
+            psUpdate.setString(4, f.getLote());
+            psUpdate.setString(5, f.getFMM());
+            psUpdate.setInt(6, f.getIdUsu());
+            psUpdate.setInt(7, f.getIdBLs());
             psUpdate.executeUpdate();
 
             mod = psUpdate.getUpdateCount();
@@ -392,7 +469,7 @@ public class GestionFMM extends ConeccionMySql {
 
     }
 
-    public ArrayList<Object> EliminaFMM(FMMForm f, Boolean transac, Connection tCn) {
+    public ArrayList<Object> EliminaBL(BLForm f, Boolean transac, Connection tCn) {
 
         int mod = -99;
         ArrayList<Object> resultado = new ArrayList<Object>();
@@ -423,8 +500,8 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            psDelete = cn.prepareStatement("DELETE FROM FMMs WHERE idFMMs = ?");
-            psDelete.setInt(1, f.getIdFMMs());
+            psDelete = cn.prepareStatement("DELETE FROM BLs WHERE idBLs = ?");
+            psDelete.setInt(1, f.getIdBLs());
             psDelete.executeUpdate();
 
             mod = psDelete.getUpdateCount();
@@ -456,11 +533,11 @@ public class GestionFMM extends ConeccionMySql {
 
     }
 
-    public ArrayList<Object> BuscarFMM(Integer idFMMs, Boolean transac, Connection tCn) {
+    public ArrayList<Object> BuscarBL(Integer idBLs, Boolean transac, Connection tCn) {
 
         ArrayList<Object> resultado = new ArrayList<Object>();
-        BeanFMM bu;
-        bu = new BeanFMM();
+        BeanBL bu;
+        bu = new BeanBL();
         boolean encontro = false;
         PreparedStatement psSelectConClave = null;
 
@@ -489,16 +566,16 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            psSelectConClave = cn.prepareStatement("SELECT p.idFMMs FROM FMMs p WHERE p.idFMMs = ?");
-            psSelectConClave.setInt(1, idFMMs);
+            psSelectConClave = cn.prepareStatement("SELECT p.idBLs FROM BLs p WHERE p.idBLs = ?");
+            psSelectConClave.setInt(1, idBLs);
             ResultSet rs = psSelectConClave.executeQuery();
 
             while (rs.next()) {
-                bu = new BeanFMM();
+                bu = new BeanBL();
 
-                bu.setIdFMMs(rs.getObject("p.idFMMs"));
-                Integer p = (Integer) bu.getIdFMMs();
-                if (p.equals(idFMMs)) {
+                bu.setIdBLs(rs.getObject("p.idBLs"));
+                Integer p = (Integer) bu.getIdBLs();
+                if (p.equals(idBLs)) {
                     encontro = true;
                 }
 
@@ -532,7 +609,7 @@ public class GestionFMM extends ConeccionMySql {
 
     }
 
-    public ArrayList<Object> MostrarFMMFormulario(Integer IdFMMs, Boolean transac, Connection tCn) {
+    public ArrayList<Object> MostrarBLFormulario(Integer IdBLs, Boolean transac, Connection tCn) {
 
         ArrayList<Object> resultado = new ArrayList<Object>();
         PreparedStatement psSelectConClave = null;
@@ -562,19 +639,42 @@ public class GestionFMM extends ConeccionMySql {
 
             }
 
-            psSelectConClave = cn.prepareStatement("SELECT p.idFMMs, p.FMM, p.cliente, p.pedido, p.lote, p.susuarios_id, IF(e.primer_nombre <> NULL AND e.primer_apellido <> NULL, e.razon_Social, CONCAT(IF(e.primer_nombre <> NULL,'',CONCAT(e.primer_nombre,' ')), IF(e.segundo_nombre <> NULL,'',CONCAT(e.segundo_nombre,' ')), IF(e.primer_apellido <> NULL,'',CONCAT(e.primer_apellido,' ')), IF(e.segundo_apellido <> NULL,'',CONCAT(e.segundo_apellido,' ')))) as nombre_usu, p.fecha_modificacion FROM FMMs p INNER JOIN susuarios r ON p.susuarios_id = r.id INNER JOIN entidades e ON r.id_tipo_documento = e.id_tipo_documento AND r.identificacion = e.identificacion WHERE p.idFMMs = ?");
-            psSelectConClave.setInt(1, IdFMMs);
+            psSelectConClave = cn.prepareStatement("SELECT p.idBLs, p.BL, p.cliente, p.motonave, p.eta, p.lote, p.FMM, p.susuarios_id, IF(e.primer_nombre <> NULL AND e.primer_apellido <> NULL, e.razon_Social, CONCAT(IF(e.primer_nombre <> NULL,'',CONCAT(e.primer_nombre,' ')), IF(e.segundo_nombre <> NULL,'',CONCAT(e.segundo_nombre,' ')), IF(e.primer_apellido <> NULL,'',CONCAT(e.primer_apellido,' ')), IF(e.segundo_apellido <> NULL,'',CONCAT(e.segundo_apellido,' ')))) as nombre_usu, p.fecha_modificacion FROM BLs p INNER JOIN susuarios r ON p.susuarios_id = r.id INNER JOIN entidades e ON r.id_tipo_documento = e.id_tipo_documento AND r.identificacion = e.identificacion WHERE p.idBLs = ?");
+            psSelectConClave.setInt(1, IdBLs);
             ResultSet rs = psSelectConClave.executeQuery();
 
-            BeanFMM bu;
+            BeanBL bu;
             while (rs.next()) {
-                bu = new BeanFMM();
+                bu = new BeanBL();
 
-                setIdFMMs(rs.getObject("p.idFMMs"));
-                setFMM(rs.getObject("p.FMM"));
+                setIdBLs(rs.getObject("p.idBLs"));
+                setBL(rs.getObject("p.BL"));
                 setCliente(rs.getObject("p.cliente"));
-                setPedido(rs.getObject("p.pedido"));
+                setMotonave(rs.getObject("p.motonave"));
+                Date dtt = (Date) rs.getObject("p.eta");
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(dtt);
+                setEtaFecha(String.valueOf(calendar.get(Calendar.DAY_OF_MONTH)) + "/" + String.valueOf(calendar.get(Calendar.MONTH) + 1) + "/" + String.valueOf(calendar.get(Calendar.YEAR)));
+                int hora24 = calendar.get(Calendar.HOUR_OF_DAY); //hora en formato 24hs
+                int minutos = calendar.get(Calendar.MINUTE);
+                String hh;
+                String h = "";
+                String h2 = "";
+                if (hora24 > 12) {
+                    hora24 = hora24 - 12;
+                    hh = "PM";
+                } else {
+                    hh = "AM";
+                }
+                if (hora24 < 10) {
+                    h = "0";
+                }
+                if (minutos < 10) {
+                    h2 = "0";
+                }
+                setEtaHora(h + String.valueOf(hora24) + ":" + h2 + minutos + " " + hh);
                 setLote(rs.getObject("p.lote"));
+                setFMM(rs.getObject("p.FMM"));
                 setNombreUsu(rs.getObject("nombre_usu"));
                 setFechaModificacion(rs.getObject("p.fecha_modificacion"));
 
@@ -764,28 +864,23 @@ public class GestionFMM extends ConeccionMySql {
 //        return GR_USUARIOS2;
 //    }
 //}
-    private Object idFMMs;
-    private Object FMM;
+    private Object idBLs;
+    private Object BL;
     private Object cliente;
-    private Object pedido;
+    private Object motonave;
+    private Object etaFecha;
+    private Object etaHora;
     private Object lote;
+    private Object FMM;
     private Object nombreUsu;
     private Object fechaModificacion;
 
-    public Object getNombreUsu() {
-        return nombreUsu;
+    public Object getBL() {
+        return BL;
     }
 
-    public void setNombreUsu(Object nombreUsu) {
-        this.nombreUsu = nombreUsu;
-    }
-
-    public Object getFechaModificacion() {
-        return fechaModificacion;
-    }
-
-    public void setFechaModificacion(Object fechaModificacion) {
-        this.fechaModificacion = fechaModificacion;
+    public void setBL(Object BL) {
+        this.BL = BL;
     }
 
     public Object getFMM() {
@@ -804,12 +899,36 @@ public class GestionFMM extends ConeccionMySql {
         this.cliente = cliente;
     }
 
-    public Object getIdFMMs() {
-        return idFMMs;
+    public Object getEtaFecha() {
+        return etaFecha;
     }
 
-    public void setIdFMMs(Object idFMMs) {
-        this.idFMMs = idFMMs;
+    public void setEtaFecha(Object etaFecha) {
+        this.etaFecha = etaFecha;
+    }
+
+    public Object getEtaHora() {
+        return etaHora;
+    }
+
+    public void setEtaHora(Object etaHora) {
+        this.etaHora = etaHora;
+    }
+
+    public Object getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Object fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    public Object getIdBLs() {
+        return idBLs;
+    }
+
+    public void setIdBLs(Object idBLs) {
+        this.idBLs = idBLs;
     }
 
     public Object getLote() {
@@ -820,12 +939,19 @@ public class GestionFMM extends ConeccionMySql {
         this.lote = lote;
     }
 
-    public Object getPedido() {
-        return pedido;
+    public Object getMotonave() {
+        return motonave;
     }
 
-    public void setPedido(Object pedido) {
-        this.pedido = pedido;
+    public void setMotonave(Object motonave) {
+        this.motonave = motonave;
     }
 
+    public Object getNombreUsu() {
+        return nombreUsu;
+    }
+
+    public void setNombreUsu(Object nombreUsu) {
+        this.nombreUsu = nombreUsu;
+    }
 }

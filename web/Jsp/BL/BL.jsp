@@ -1,11 +1,9 @@
 <%-- 
-    Document   : FMM
+    Document   : BL
     Created on : 24-diciembre-2012, 7:52:01
     Author     : Gilberth
 --%>
 
-<%@page import="forms.bean.BeanTipoDocumentoAut"%>
-<%@page import="java.util.ArrayList"%>
 <%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <%@ taglib uri="http://struts.apache.org/tags-html" prefix="html" %>
 <%@ taglib uri="http://struts.apache.org/tags-bean" prefix="bean" %>
@@ -16,12 +14,15 @@
 <html:html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>FMMs</title>
+        <title>BLs</title>
         <link type="text/css" href="css/ui.all.css" rel="stylesheet" />
         <link type="text/css" href="css/comun.css" rel="stylesheet" />
-        <script src="Js/jquery-1.7.2.min.js" type="text/javascript"></script>
-        <script type="text/javascript" src="Js/jquery.validate.js"></script>
+        <link type="text/css" href="css/jquery-ui.css" rel="stylesheet" />
+        <script type="text/javascript" src="Js/jquery-1.8.3.js"></script>
         <script type="text/javascript" src="Js/ui/ui.datepicker.js"></script>
+        <script type="text/javascript" src="Js/ui/globalize.js"></script>
+        <script type="text/javascript" src="Js/ui/jquery-ui.js"></script>
+        <script type="text/javascript" src="Js/jquery.validate.js"></script>
         <script type="text/javascript" src="Js/ui/ui.core.js"></script>
         <script src="Js/i18n/messages_es.js" type="text/javascript"></script>
         <%
@@ -42,7 +43,7 @@
                 $('#submit').click(function(e) {
                     e.preventDefault();
                     document.forms[0].idUsu.value=<%= session.getAttribute("idusu")%>
-                    if(document.forms[0].idFMMs.value==""){
+                    if(document.forms[0].idBLs.value==""){
                         document.forms[0].op.value="nuevo";
                     }
                     else {
@@ -53,7 +54,7 @@
                 $("#forma").validate({
                     event: "blur",
                     rules : {
-                        FMM : {
+                        BL : {
                             required : true,
                             minlength : 3,
                             maxlength : 50
@@ -80,16 +81,43 @@
                     buttonImageOnly: true,
                     dateFormat: "dd/mm/yy"
                 });
+                $.widget( "ui.timespinner", $.ui.spinner, {
+                    options: {
+                        // seconds
+                        step: 60 * 1000,
+                        // hours
+                        page: 60
+                    },
+ 
+                    _parse: function( value ) {
+                        if ( typeof value === "string" ) {
+                            // already a timestamp
+                            if ( Number( value ) == value ) {
+                                return Number( value );
+                            }
+                            return +Globalize.parseDate( value );
+                        }
+                        return value;
+                    },
+ 
+                    _format: function( value ) {
+                        return Globalize.format( new Date(value), "t" );
+                    }
+                });
+                $( "#spinner" ).timespinner();
             });
                 
             function nuevo(){
                 document.forms[0].op.value="";
                 document.forms[0].op2.value="";
-                document.forms[0].idFMMs.value="";
-                document.forms[0].FMM.value="";
+                document.forms[0].idBLs.value="";
+                document.forms[0].BL.value="";
                 document.forms[0].cliente.value="";
-                document.forms[0].pedido.value="";
+                document.forms[0].motonave.value="";
+                document.forms[0].etaFecha.value="";
+                document.forms[0].etaHora.value="";
                 document.forms[0].lote.value="";
+                document.forms[0].FMM.value="";
                 document.getElementById('nombreUsu').innerHTML = "";
                 document.getElementById('fechaModificacion').innerHTML = "";
             }
@@ -107,7 +135,7 @@
 
             function historico(){
                 var forma = document.forms[0];
-                var emer = window.open('../ZF/Jsp/Log/Auditoria/Auditoria.jsp?getOp=buscar&accion=referencia&formulario=fmm&referencia='+'<%=request.getAttribute("getIdFMMs")%>','Auditoria','width=950,height=500,top=100%,left=100%,scrollbars=yes,resizable=yes');
+                var emer = window.open('../ZF/Jsp/Log/Auditoria/Auditoria.jsp?getOp=buscar&accion=referencia&formulario=bl&referencia='+'<%=request.getAttribute("getIdBLs")%>','Auditoria','width=950,height=500,top=100%,left=100%,scrollbars=yes,resizable=yes');
                 emer.focus();
             }
             
@@ -144,6 +172,7 @@
                     style2.display = style2.display? "":"block";
                 }
             }
+            
         </script>
 
         <style type="text/css">
@@ -161,62 +190,62 @@
     </head>
     <body>
         <div id="stylized" class="myform">
-            <html:form styleClass="forma" styleId="forma" action="/FMM" method="post">
+            <html:form styleClass="forma" styleId="forma" action="/BL" method="post">
 
                 <input type="hidden" name="op" value=""> 
                 <input type="hidden" name="op2" value="<%= String.valueOf(request.getAttribute("getOp2"))%>"> 
                 <input type="hidden" name="idUsu" value=""> 
-                <input type="hidden" name="idFMMs" value='<%= String.valueOf(request.getAttribute("getIdFMMs"))%>'> 
+                <input type="hidden" name="idBLs" value='<%= String.valueOf(request.getAttribute("getIdBLs"))%>'> 
 
                 <h1>FMMs</h1>
                 <div>
-                    <label class="texto" for="txtFMM">FMM</label>
-                    <% if (request.getAttribute("getIdFMMs") != "") {%> 
-                    <html:text property="FMM" readonly="true" value='<%= String.valueOf(request.getAttribute("getFMM"))%>'></html:text>
+                    <label class="texto" for="txtBL">BL</label>
+                    <% if (request.getAttribute("getIdBLs") != "") {%> 
+                    <html:text property="BL" readonly="true" value='<%= String.valueOf(request.getAttribute("getBL"))%>'></html:text>
                     <% } else {%> 
-                    <html:text property="FMM" value='<%= String.valueOf(request.getAttribute("getFMM"))%>'></html:text>
+                    <html:text property="BL" value='<%= String.valueOf(request.getAttribute("getBL"))%>'></html:text>
                     <% }%> 
                     <label class="texto" for="txtCliente">Cliente</label>
                     <html:text property="cliente" value='<%= String.valueOf(request.getAttribute("getCliente"))%>'></html:text>
-                    </div>
-                    <div>
-                        <label class="texto" for="txtPedido">Pedido</label>
-                    <html:text property="pedido" value='<%= String.valueOf(request.getAttribute("getPedido"))%>'></html:text>
-                        <label class="texto" for="txtLote">Lote</label>
-                    <html:text property="lote" value='<%= String.valueOf(request.getAttribute("getLote"))%>'></html:text>
-                    </div>
-                    <div>
-                        <label class="texto" for="txtBL">BL</label>
-                    <html:text property="bl" value='<%= String.valueOf(request.getAttribute("getBL"))%>'></html:text>
-                        <label class="texto" for="txtMotonave">Motonave</label>
+                </div>
+                <div>
+                    <label class="texto" for="txtMotonave">Motonave</label>
                     <html:text property="motonave" value='<%= String.valueOf(request.getAttribute("getMotonave"))%>'></html:text>
-                        <label class="texto" for="txtEta">Eta</label>
-                    <html:text property="eta" styleClass="datepicker" value='<%= String.valueOf(request.getAttribute("getEta"))%>'></html:text>
-                    </div>
-                    <div>
-                        <fieldset id="el01">
-                            <legend>VLs</legend>
-                            <table>
-                                <tr>
-                                    <td colspan="2">
-                                        <input type="checkbox" name="todos" value="true"> Seleccionar Todos
-                                    </td>
-                                    <td rowspan="2">
-                                        <fieldset id="el01">
-                                            <table>
-                                                <tr>
-                                                    <td>
-                                                        <input type="checkbox" name="todos" value="true"> Seleccionar Todos
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <fieldset id="el01">
-                                                            <table>
-                                                                <tr>
-                                                                    <td>
-                                                                        <input type="checkbox" name="checkReferencia" value="true"> Referencia
-                                                                    </td>
+                    <label class="texto" for="txtEta">Eta</label>
+                    <html:text property="etaFecha" styleClass="datepicker" value='<%= String.valueOf(request.getAttribute("getEtaFecha"))%>'></html:text>
+                    <html:text property="etaHora" styleId="spinner" value='<%= String.valueOf(request.getAttribute("getEtaHora"))%>'></html:text>
+                </div>
+                <div>
+                    <label class="texto" for="txtLote">Lote</label>
+                    <html:text property="lote" value='<%= String.valueOf(request.getAttribute("getLote"))%>'></html:text>
+                    <label class="texto" for="txtFMM">FMM</label>
+                    <html:text property="FMM" value='<%= String.valueOf(request.getAttribute("getFMM"))%>'></html:text>
+                </div>
+                <% if (request.getAttribute("getIdBLs") != "") {%> 
+                <div>
+                    <fieldset id="el01">
+                        <legend>VLs</legend>
+                        <table>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="checkbox" name="todos" value="true"> Seleccionar Todos
+                                </td>
+                                <td rowspan="2">
+                                    <fieldset id="el01">
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" name="todos" value="true"> Seleccionar Todos
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <fieldset id="el01">
+                                                        <table>
+                                                            <tr>
+                                                                <td>
+                                                                    <input type="checkbox" name="checkReferencia" value="true"> Referencia
+                                                                </td>
                                                                 <% if (request.getAttribute("getOp2") != "nuevo") {%> 
                                                                 <td colspan="2"><html:text property="referencia" styleId="referencia" readonly="true" value='<%= String.valueOf(request.getAttribute("getReferencia"))%>'></html:text></td>
                                                                 <% } else {%> 
@@ -374,19 +403,20 @@
                             <tr>
                                 <td class="text">Observaciones</td>
                                 <td colspan="2"><html:textarea property="observaciones" styleId="observaciones" value='<%= String.valueOf(request.getAttribute("getObservaciones"))%>'></html:textarea></td>
-                                </tr>
-                            </table>
-                        </fieldset>
-                    </div>
-                    <div>
-                        <fieldset>
-                            <legend>
-                                [<a class="linkin" href="javascript:toggleLayer('auditoria')">
-                                    Auditoría
-                                </a>]
-                            </legend>
-                            <div id="auditoria" style="display: none;">
-                                <label for="txtUsu">Usuario: </label><strong><div id="nombreUsu"><%= String.valueOf(request.getAttribute("getNombreUsu"))%></div></strong>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </div>
+                <% }%> 
+                <div>
+                    <fieldset>
+                        <legend>
+                            [<a class="linkin" href="javascript:toggleLayer('auditoria')">
+                                Auditoría
+                            </a>]
+                        </legend>
+                        <div id="auditoria" style="display: none;">
+                            <label for="txtUsu">Usuario: </label><strong><div id="nombreUsu"><%= String.valueOf(request.getAttribute("getNombreUsu"))%></div></strong>
                             <label for="txtFechaModificacion">Fecha de Modificación: </label><strong><div id="fechaModificacion"><%= String.valueOf(request.getAttribute("getFechaModificacion"))%></div></strong>
                             <div><br>
                             </div>
@@ -397,7 +427,7 @@
                     <div><br>
                     </div>
                     <div>
-                        <a class="boton" href="javascript:nuevo();">Nuevo</a> <a class="boton" id="submit" href="javascript:guardar();">Guardar</a> <% if (request.getAttribute("getIdFMMs") != "") {%> <a class="boton" href="javascript:eliminar();">Eliminar</a> <% }%> <a class="boton" href="javascript:atras();">Volver</a>
+                        <a class="boton" href="javascript:nuevo();">Nuevo</a> <a class="boton" id="submit" href="javascript:guardar();">Guardar</a> <% if (request.getAttribute("getIdBLs") != "") {%> <a class="boton" href="javascript:eliminar();">Eliminar</a> <% }%> <a class="boton" href="javascript:atras();">Volver</a>
                     </div>
                     <%
                         if (request.getAttribute("respuesta") != "") {

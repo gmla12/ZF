@@ -4,14 +4,14 @@
  */
 package actions;
 
-import forms.FMMForm;
+import forms.BLForm;
 import java.sql.Connection;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import modelo.log.GestionAuditoria;
-import modelo.GestionFMM;
+import modelo.GestionBL;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -21,9 +21,9 @@ import org.apache.struts.action.ActionMapping;
  *
  * @author Mario
  */
-public class ActionFMM extends Action {
+public class ActionBL extends Action {
 
-    public ActionFMM() {
+    public ActionBL() {
 
         super();
 
@@ -36,17 +36,20 @@ public class ActionFMM extends Action {
             HttpServletResponse response)
             throws Exception {
 
-        FMMForm fo = (FMMForm) form;
-        GestionFMM gr = new GestionFMM();
+        BLForm fo = (BLForm) form;
+        GestionBL gr = new GestionBL();
         GestionAuditoria gA = new GestionAuditoria();
         HttpSession session = request.getSession();
         if (fo.getOp().equals("nuevo")) {
 
-            request.setAttribute("getIdFMMs", fo.getIdFMMs());
-            request.setAttribute("getFMM", fo.getFMM());
+            request.setAttribute("getIdBLs", fo.getIdBLs());
+            request.setAttribute("getBL", fo.getBL());
             request.setAttribute("getCliente", fo.getCliente());
-            request.setAttribute("getPedido", fo.getPedido());
+            request.setAttribute("getMotonave", fo.getMotonave());
+            request.setAttribute("getEtaFecha", fo.getEtaFecha());
+            request.setAttribute("getEtaHora", fo.getEtaHora());
             request.setAttribute("getLote", fo.getLote());
+            request.setAttribute("getFMM", fo.getFMM());
 
             ArrayList<Object> resultado = new ArrayList<Object>();
             Connection cn = null;
@@ -59,18 +62,18 @@ public class ActionFMM extends Action {
                 if ((Boolean) resultado1.get(0) == false) {
 
                     ArrayList<Object> resultado2 = new ArrayList<Object>();
-                    resultado2 = gr.IngresaFMM(fo, true, cn);
+                    resultado2 = gr.IngresaBL(fo, true, cn);
                     if ((Boolean) resultado2.get(0) == false) {
 
-                        fo.setIdFMMs(Integer.valueOf(resultado2.get(1).toString()));
+                        fo.setIdBLs(Integer.valueOf(resultado2.get(1).toString()));
 
                         ArrayList<Object> resultado3 = new ArrayList<Object>();
-                        resultado3 = gA.BuscarFormulario("fmm", true, cn);
+                        resultado3 = gA.BuscarFormulario("bl", true, cn);
                         if ((Boolean) resultado3.get(0) == false) {
 
                             ArrayList<Object> resultado4 = new ArrayList<Object>();
-                            String valor_nuevo = "id=" + fo.getIdFMMs() + "&fmm=" + fo.getFMM() + "&cliente=" + fo.getCliente() + "&pedido=" + fo.getPedido() + "&lote=" + fo.getLote();
-                            resultado4 = gA.IngresaAuditoria("Nuevo", "", valor_nuevo, fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdFMMs()), true, cn);
+                            String valor_nuevo = "id=" + fo.getIdBLs() + "&bl=" + fo.getBL() + "&cliente=" + fo.getCliente() + "&motonave=" + fo.getMotonave() + "&eta=" + fo.getEtaFecha() + " " + fo.getEtaHora() + "&lote=" + fo.getLote() + "&fmm=" + fo.getFMM() ;
+                            resultado4 = gA.IngresaAuditoria("Nuevo", "", valor_nuevo, fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdBLs()), true, cn);
                             if ((Boolean) resultado4.get(0) == false) {
 
                                 ArrayList<Object> resultado5 = new ArrayList<Object>();
@@ -82,25 +85,31 @@ public class ActionFMM extends Action {
                                     if ((Boolean) resultado6.get(0) == false) {
 
                                         ArrayList<Object> resultado7 = new ArrayList<Object>();
-                                        resultado7 = gr.MostrarFMMFormulario(fo.getIdFMMs(), false, null);
+                                        resultado7 = gr.MostrarBLFormulario(fo.getIdBLs(), false, null);
                                         if ((Boolean) resultado7.get(0) == false) {
 
-                                            request.setAttribute("getIdFMMs", gr.getIdFMMs());
-                                            request.setAttribute("getFMM", gr.getFMM());
+                                            request.setAttribute("getIdBLs", gr.getIdBLs());
+                                            request.setAttribute("getBL", gr.getBL());
                                             request.setAttribute("getCliente", gr.getCliente());
-                                            request.setAttribute("getPedido", gr.getPedido());
+                                            request.setAttribute("getMotonave", gr.getMotonave());
+                                            request.setAttribute("getEtaFecha", gr.getEtaFecha());
+                                            request.setAttribute("getEtaHora", gr.getEtaHora());
                                             request.setAttribute("getLote", gr.getLote());
+                                            request.setAttribute("getFMM", gr.getFMM());
                                             request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
                                             request.setAttribute("getNombreUsu", gr.getNombreUsu());
                                             //para validar si se modifico un campo
-                                            session.setAttribute("getFMMIdFMMs", gr.getIdFMMs());
-                                            session.setAttribute("getFMMFMM", gr.getFMM());
-                                            session.setAttribute("getFMMCliente", gr.getCliente());
-                                            session.setAttribute("getFMMPedido", gr.getPedido());
-                                            session.setAttribute("getFMMLote", gr.getLote());
+                                            session.setAttribute("getBLIdBLs", gr.getIdBLs());
+                                            session.setAttribute("getBLBL", gr.getBL());
+                                            session.setAttribute("getBLCliente", gr.getCliente());
+                                            session.setAttribute("getBLMotonave", gr.getMotonave());
+                                            session.setAttribute("getBLEtaFecha", gr.getEtaFecha());
+                                            session.setAttribute("getBLEtaHora", gr.getEtaHora());
+                                            session.setAttribute("getBLLote", gr.getLote());
+                                            session.setAttribute("getBLFMM", gr.getFMM());
 
                                             request.setAttribute("respuesta", "Registro ingresado correctamente.");
-                                            System.out.println("Action Ingreso FMM");
+                                            System.out.println("Action Ingreso BL");
                                             return mapping.findForward("ok");
 
                                         } else {
@@ -161,11 +170,14 @@ public class ActionFMM extends Action {
 
         } else if (fo.getOp().equals("modificar")) {
 
-            request.setAttribute("getIdFMMs", fo.getIdFMMs());
-            request.setAttribute("getFMM", fo.getFMM());
+            request.setAttribute("getIdBLs", fo.getIdBLs());
+            request.setAttribute("getBL", fo.getBL());
             request.setAttribute("getCliente", fo.getCliente());
-            request.setAttribute("getPedido", fo.getPedido());
+            request.setAttribute("getMotonave", fo.getMotonave());
+            request.setAttribute("getEtaFecha", fo.getEtaFecha());
+            request.setAttribute("getEtaHora", fo.getEtaHora());
             request.setAttribute("getLote", fo.getLote());
+            request.setAttribute("getFMM", fo.getFMM());
 
             ArrayList<Object> resultado = new ArrayList<Object>();
             Connection cn = null;
@@ -178,39 +190,45 @@ public class ActionFMM extends Action {
                 if ((Boolean) resultado1.get(0) == false) {
 
                     ArrayList<Object> resultado2 = new ArrayList<Object>();
-                    resultado2 = gr.ModificaFMM(fo, true, cn);
+                    resultado2 = gr.ModificaBL(fo, true, cn);
                     if ((Boolean) resultado2.get(0) == false) {
 
                         ArrayList<Object> resultado3 = new ArrayList<Object>();
-                        resultado3 = gA.BuscarFormulario("fmm", true, cn);
+                        resultado3 = gA.BuscarFormulario("bl", true, cn);
                         if ((Boolean) resultado3.get(0) == false) {
 
                             ArrayList<Object> resultado4 = new ArrayList<Object>();
 
                             //valida si hubo un cambio en algun campo
-                            String NIdFMMs = String.valueOf(fo.getIdFMMs());
-                            String NFMM = fo.getFMM();
+                            String NIdBLs = String.valueOf(fo.getIdBLs());
+                            String NBL = fo.getBL();
                             String NCliente = fo.getCliente();
-                            String NPedido = fo.getPedido();
+                            String NMotonave = fo.getMotonave();
+                            String NEtaFecha = fo.getEtaFecha().toString();
+                            String NEtaHora = fo.getEtaHora().toString();
                             String NLote = fo.getLote();
-                            String AIdFMMs = session.getAttribute("getFMMIdFMMs").toString();
-                            String AFMM = session.getAttribute("getFMMFMM").toString();
-                            String ACliente = session.getAttribute("getFMMCliente").toString();
-                            String APedido = session.getAttribute("getFMMPedido").toString();
-                            String ALote = session.getAttribute("getFMMLote").toString();
+                            String NFMM = fo.getFMM();
+                            String AIdBLs = session.getAttribute("getBLIdBLs").toString();
+                            String ABL = session.getAttribute("getBLBL").toString();
+                            String ACliente = session.getAttribute("getBLCliente").toString();
+                            String AMotonave = session.getAttribute("getBLMotonave").toString();
+                            String AEtaFecha = session.getAttribute("getBLEtaFecha").toString();
+                            String AEtaHora = session.getAttribute("getBLEtaHora").toString();
+                            String ALote = session.getAttribute("getBLLote").toString();
+                            String AFMM = session.getAttribute("getBLFMM").toString();
                             String valor_anterior = "";
                             String valor_nuevo = "";
-                            if (NIdFMMs.equals(AIdFMMs) == false) {
-                                valor_nuevo = "id=" + NIdFMMs;
-                                valor_anterior = "id=" + AIdFMMs;
+                            if (NIdBLs.equals(AIdBLs) == false) {
+                                valor_nuevo = "id=" + NIdBLs;
+                                valor_anterior = "id=" + AIdBLs;
                             }
-                            if (NFMM.equals(AFMM) == false) {
+                            if (NBL.equals(ABL) == false) {
                                 if (!valor_nuevo.equals("")) {
                                     valor_nuevo = valor_nuevo + "&";
                                     valor_anterior = valor_anterior + "&";
                                 }
-                                valor_nuevo = valor_nuevo + "fmm=" + NFMM;
-                                valor_anterior = valor_anterior + "fmm=" + AFMM;
+                                valor_nuevo = valor_nuevo + "bl=" + NBL;
+                                valor_anterior = valor_anterior + "bl=" + ABL;
                             }
                             if (NCliente.equals(ACliente) == false) {
                                 if (!valor_nuevo.equals("")) {
@@ -220,13 +238,21 @@ public class ActionFMM extends Action {
                                 valor_nuevo = valor_nuevo + "cliente=" + NCliente;
                                 valor_anterior = valor_anterior + "ciente=" + ACliente;
                             }
-                            if (NPedido.equals(APedido) == false) {
+                            if (NMotonave.equals(AMotonave) == false) {
                                 if (!valor_nuevo.equals("")) {
                                     valor_nuevo = valor_nuevo + "&";
                                     valor_anterior = valor_anterior + "&";
                                 }
-                                valor_nuevo = valor_nuevo + "pedido=" + NPedido;
-                                valor_anterior = valor_anterior + "pedido=" + APedido;
+                                valor_nuevo = valor_nuevo + "motonave=" + NMotonave;
+                                valor_anterior = valor_anterior + "motonave=" + AMotonave;
+                            }
+                            if ((NEtaFecha.equals(AEtaFecha) == false) || (NEtaHora.equals(AEtaHora) == false)) {
+                                if (!valor_nuevo.equals("")) {
+                                    valor_nuevo = valor_nuevo + "&";
+                                    valor_anterior = valor_anterior + "&";
+                                }
+                                valor_nuevo = valor_nuevo + "eta=" + NEtaFecha + " " + NEtaHora;
+                                valor_anterior = valor_anterior + "eta=" + AEtaFecha + " " + AEtaHora;
                             }
                             if (NLote.equals(ALote) == false) {
                                 if (!valor_nuevo.equals("")) {
@@ -236,8 +262,16 @@ public class ActionFMM extends Action {
                                 valor_nuevo = valor_nuevo + "lote=" + NLote;
                                 valor_anterior = valor_anterior + "lote=" + ALote;
                             }
+                            if (NFMM.equals(AFMM) == false) {
+                                if (!valor_nuevo.equals("")) {
+                                    valor_nuevo = valor_nuevo + "&";
+                                    valor_anterior = valor_anterior + "&";
+                                }
+                                valor_nuevo = valor_nuevo + "fmm=" + NFMM;
+                                valor_anterior = valor_anterior + "fmm=" + AFMM;
+                            }
 
-                            resultado4 = gA.IngresaAuditoria("Modificar", valor_anterior, valor_nuevo, fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdFMMs()), true, cn);
+                            resultado4 = gA.IngresaAuditoria("Modificar", valor_anterior, valor_nuevo, fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdBLs()), true, cn);
                             if ((Boolean) resultado4.get(0) == false) {
 
                                 ArrayList<Object> resultado5 = new ArrayList<Object>();
@@ -249,25 +283,31 @@ public class ActionFMM extends Action {
                                     if ((Boolean) resultado6.get(0) == false) {
 
                                         ArrayList<Object> resultado7 = new ArrayList<Object>();
-                                        resultado7 = gr.MostrarFMMFormulario(fo.getIdFMMs(), false, null);
+                                        resultado7 = gr.MostrarBLFormulario(fo.getIdBLs(), false, null);
                                         if ((Boolean) resultado7.get(0) == false) {
 
-                                            request.setAttribute("getIdFMMs", gr.getIdFMMs());
-                                            request.setAttribute("getFMM", gr.getFMM());
+                                            request.setAttribute("getIdBLs", gr.getIdBLs());
+                                            request.setAttribute("getBL", gr.getBL());
                                             request.setAttribute("getCliente", gr.getCliente());
-                                            request.setAttribute("getPedido", gr.getPedido());
+                                            request.setAttribute("getMotonave", gr.getMotonave());
+                                            request.setAttribute("getEtaFecha", gr.getEtaFecha());
+                                            request.setAttribute("getEtaHora", gr.getEtaHora());
                                             request.setAttribute("getLote", gr.getLote());
+                                            request.setAttribute("getFMM", gr.getFMM());
                                             request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
                                             request.setAttribute("getNombreUsu", gr.getNombreUsu());
                                             //para validar si se modifico un campo
-                                            session.setAttribute("getFMMIdFMMs", gr.getIdFMMs());
-                                            session.setAttribute("getFMMFMM", gr.getFMM());
-                                            session.setAttribute("getFMMCliente", gr.getCliente());
-                                            session.setAttribute("getFMMPedido", gr.getPedido());
-                                            session.setAttribute("getFMMLote", gr.getLote());
+                                            session.setAttribute("getBLIdBLs", gr.getIdBLs());
+                                            session.setAttribute("getBLBL", gr.getBL());
+                                            session.setAttribute("getBLCliente", gr.getCliente());
+                                            session.setAttribute("getBLMotonave", gr.getMotonave());
+                                            session.setAttribute("getBLEtaFecha", gr.getEtaFecha());
+                                            session.setAttribute("getBLEtaHora", gr.getEtaHora());
+                                            session.setAttribute("getBLLote", gr.getLote());
+                                            session.setAttribute("getBLFMM", gr.getFMM());
 
                                             request.setAttribute("respuesta", "Registro modificado correctamente.");
-                                            System.out.println("Action Modicar FMM");
+                                            System.out.println("Action Modicar BL");
                                             return mapping.findForward("ok");
 
                                         } else {
@@ -328,11 +368,14 @@ public class ActionFMM extends Action {
 
         } else if (fo.getOp().equals("eliminar")) {
 
-            request.setAttribute("getIdFMMs", fo.getIdFMMs());
-            request.setAttribute("getFMM", fo.getFMM());
+            request.setAttribute("getIdBLs", fo.getIdBLs());
+            request.setAttribute("getBL", fo.getBL());
             request.setAttribute("getCliente", fo.getCliente());
-            request.setAttribute("getPedido", fo.getPedido());
+            request.setAttribute("getMotonave", fo.getMotonave());
+            request.setAttribute("getEtaFecha", fo.getEtaFecha());
+            request.setAttribute("getEtaHora", fo.getEtaHora());
             request.setAttribute("getLote", fo.getLote());
+            request.setAttribute("getFMM", fo.getFMM());
             request.setAttribute("getFechaModificacion", "");
             request.setAttribute("getNombreUsu", "");
 
@@ -347,16 +390,16 @@ public class ActionFMM extends Action {
                 if ((Boolean) resultado1.get(0) == false) {
 
                     ArrayList<Object> resultado2 = new ArrayList<Object>();
-                    resultado2 = gr.EliminaFMM(fo, true, cn);
+                    resultado2 = gr.EliminaBL(fo, true, cn);
                     if ((Boolean) resultado2.get(0) == false) {
 
                         ArrayList<Object> resultado3 = new ArrayList<Object>();
-                        resultado3 = gA.BuscarFormulario("fmm", true, cn);
+                        resultado3 = gA.BuscarFormulario("bl", true, cn);
                         if ((Boolean) resultado3.get(0) == false) {
 
                             ArrayList<Object> resultado4 = new ArrayList<Object>();
-                            String valor_anterior = "id=" + fo.getIdFMMs() + "&fmm=" + fo.getFMM() + "&cliente=" + fo.getCliente() + "&pedido=" + fo.getPedido() + "&lote=" + fo.getLote();
-                            resultado4 = gA.IngresaAuditoria("Eliminar", valor_anterior, "", fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdFMMs()), true, cn);
+                            String valor_anterior = "id=" + fo.getIdBLs() + "&bl=" + fo.getBL() + "&cliente=" + fo.getCliente() + "&motonave=" + fo.getMotonave() + "&eta=" + fo.getEtaFecha() + " " + fo.getEtaHora() + "&lote=" + fo.getLote() + "&fmm=" + fo.getFMM();
+                            resultado4 = gA.IngresaAuditoria("Eliminar", valor_anterior, "", fo.getIdUsu(), Integer.valueOf(gA.getIdFormulario().toString()), String.valueOf(fo.getIdBLs()), true, cn);
                             if ((Boolean) resultado4.get(0) == false) {
 
                                 ArrayList<Object> resultado5 = new ArrayList<Object>();
@@ -367,16 +410,19 @@ public class ActionFMM extends Action {
                                     resultado6 = gr.autoCommint(true, cn);
                                     if ((Boolean) resultado6.get(0) == false) {
 
-                                        request.setAttribute("getIdFMMs", "");
-                                        request.setAttribute("getFMM", "");
+                                        request.setAttribute("getIdBLs", "");
+                                        request.setAttribute("getBL", "");
                                         request.setAttribute("getCliente", "");
-                                        request.setAttribute("getPedido", "");
+                                        request.setAttribute("getMotonave", "");
+                                        request.setAttribute("getEtaFecha", "");
+                                        request.setAttribute("getEtaHora", "");
                                         request.setAttribute("getLote", "");
+                                        request.setAttribute("getFMM", "");
                                         request.setAttribute("getNombreUsu", "");
                                         request.setAttribute("getFechaModificacion", "");
 
                                         request.setAttribute("respuesta", "Registro eliminado correctamente.");
-                                        System.out.println("Action Eliminar FMM");
+                                        System.out.println("Action Eliminar BL");
 
                                         return mapping.findForward("ok");
 
