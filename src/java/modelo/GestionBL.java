@@ -8,10 +8,10 @@ import forms.BLForm;
 import forms.BLOpForm;
 import forms.bean.BeanBL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import util.ConeccionMySql;
 
 /**
@@ -58,17 +58,21 @@ public class GestionBL extends ConeccionMySql {
             psInsertar.setString(1, f.getBL());
             psInsertar.setString(2, f.getCliente());
             psInsertar.setString(3, f.getMotonave());
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Date dtf = sdf.parse(f.getEtaFecha());
-            Date dth = sdf.parse(f.getEtaHora());
-            long t = dtf.getTime() + dth.getTime();
-            java.sql.Date dts = new java.sql.Date(t);
-            psInsertar.setDate(4, dts);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy h:mm a");
+            Date dtf = sdf.parse(f.getEtaFecha() + " " + f.getEtaHora());
+            java.sql.Timestamp momentoTimestamp = new java.sql.Timestamp(dtf.getTime());
+            psInsertar.setTimestamp(4, momentoTimestamp);
             psInsertar.setString(5, f.getLote());
             psInsertar.setString(6, f.getFMM());
             psInsertar.setInt(7, f.getIdUsu());
             psInsertar.executeUpdate(); // Se ejecuta la inserción.
 
+            // Se obtiene la clave generada
+            int claveGenerada = -1;
+            ResultSet rs = psInsertar.getGeneratedKeys();
+            while (rs.next()) {
+                claveGenerada = rs.getInt(1);
+            }
             mod = psInsertar.getUpdateCount();
 
             if (transac == false) { // si no es una transaccion cierra la conexion
@@ -78,6 +82,7 @@ public class GestionBL extends ConeccionMySql {
             }
 
             resultado.add(false); //si no hubo un error asigna false
+            resultado.add(claveGenerada); // clave generada
             resultado.add(mod); // y el numero de registros consultados
 
         } catch (SQLException e) {
@@ -438,6 +443,73 @@ public class GestionBL extends ConeccionMySql {
             psUpdate.setString(5, f.getFMM());
             psUpdate.setInt(6, f.getIdUsu());
             psUpdate.setInt(7, f.getIdBLs());
+            psUpdate.executeUpdate();
+
+            mod = psUpdate.getUpdateCount();
+
+            if (transac == false) { // si no es una transaccion cierra la conexion
+
+                cn.close();
+
+            }
+
+            resultado.add(false); //si no hubo un error asigna false
+            resultado.add(mod); // y el numero de registros consultados
+
+        } catch (SQLException e) {
+
+            resultado.add(true); //si hubo error asigna true
+            resultado.add(e); //y asigna el error para retornar y visualizar
+
+            if (cn != null) {
+                cn.rollback();
+                cn.close();
+            }
+
+        } finally {
+
+            return resultado;
+
+        }
+
+    }
+
+    public ArrayList<Object> ModificaBLUsu(BLForm f, Boolean transac, Connection tCn) {
+
+        int mod = -99;
+        ArrayList<Object> resultado = new ArrayList<Object>();
+        PreparedStatement psUpdate = null;
+
+        try {
+
+            if (transac == false) { //si no es una transaccion busca una nueva conexion
+
+                ArrayList<Object> resultad = new ArrayList<Object>();
+                resultad = (ArrayList) getConection();
+
+                if ((Boolean) resultad.get(0) == false) { // si no hubo error al obtener la conexion
+
+                    cn = (Connection) resultad.get(1);
+
+                } else { //si hubo error al obtener la conexion retorna el error para visualizar
+
+                    resultado.add(true);
+                    resultado.add(resultad.get(1));
+                    return resultado;
+
+                }
+
+            } else { //si es una transaccion asigna la conexion utilizada
+
+                cn = tCn;
+
+            }
+
+            String query = "UPDATE BLs SET susuarios_id=?, fecha_modificacion=now()";
+            query += " WHERE idBLs = ?";
+            psUpdate = cn.prepareStatement(query);
+            psUpdate.setInt(1, f.getIdUsu());
+            psUpdate.setInt(2, f.getIdBLs());
             psUpdate.executeUpdate();
 
             mod = psUpdate.getUpdateCount();

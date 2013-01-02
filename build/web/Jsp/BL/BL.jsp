@@ -42,12 +42,41 @@
                 //guardar
                 $('#submit').click(function(e) {
                     e.preventDefault();
+                    var sw = true;
+                    var f = true;
+                    //alert('afuera');
+                    if (document.forms[0].etaHora.value != "") {
+                        //alert('entro dh');
+                        if (document.forms[0].etaFecha.value == "") {
+                            sw = false;
+                            //alert('entro df');
+                            f = false;
+                        }
+                    }
+                    if (sw == true){
+                        //alert('entro sw');
+                        document.forms[0].idUsu.value=<%= session.getAttribute("idusu")%>
+                        if(document.forms[0].idBLs.value==""){
+                            document.forms[0].op.value="nuevo";
+                        }
+                        else {
+                            document.forms[0].op.value="modificar";
+                        }
+                        $("#forma").submit(); 
+                    } else {
+                        if (f == false){
+                            alert("Debe ingresar la fecha del Eta");
+                        }
+                    }
+                }); 
+                $('#submitVin').click(function(e) {
+                    e.preventDefault();
                     document.forms[0].idUsu.value=<%= session.getAttribute("idusu")%>
-                    if(document.forms[0].idBLs.value==""){
-                        document.forms[0].op.value="nuevo";
+                    if(document.forms[0].idVines.value==""){
+                        document.forms[0].op.value="nuevoVin";
                     }
                     else {
-                        document.forms[0].op.value="modificar";
+                        document.forms[0].op.value="modificarVin";
                     }
                     $("#forma").submit(); 
                 }); 
@@ -112,6 +141,7 @@
                 document.forms[0].op2.value="";
                 document.forms[0].idBLs.value="";
                 document.forms[0].BL.value="";
+                document.forms[0].BL.readOnly=false;
                 document.forms[0].cliente.value="";
                 document.forms[0].motonave.value="";
                 document.forms[0].etaFecha.value="";
@@ -120,6 +150,9 @@
                 document.forms[0].FMM.value="";
                 document.getElementById('nombreUsu').innerHTML = "";
                 document.getElementById('fechaModificacion').innerHTML = "";
+                document.getElementById('divVines').style.display="none";
+                document.getElementById('eliminar').style.display="none";
+                document.getElementById('eliminarVin').style.display="none";
             }
 
             function eliminar(){
@@ -133,6 +166,38 @@
                 document.forms[0].submit();
             }
 
+            function consultaVin(id){
+                document.forms[0].op.value="consultaVin";
+                document.forms[0].idUsu.value=<%= session.getAttribute("idusu")%>
+                document.forms[0].op2.value=id;
+                $("#forma").submit(); 
+            }
+            
+            function nuevoVin(){
+                document.forms[0].op2.value="";
+                document.forms[0].idVines.value="";
+                document.forms[0].vin.value="";
+                document.forms[0].vin.readOnly=false;
+                document.forms[0].referencia.value="";
+                document.forms[0].codigo.value="";
+                document.forms[0].factura.value="";
+                document.forms[0].descripcion.value="";
+                document.forms[0].valorFob.value="";
+                document.forms[0].color.value="";
+                document.forms[0].huerfano.value="";
+                document.forms[0].despachado.value="";
+                document.forms[0].pedido.value="";
+                document.forms[0].FMMI.value="";
+                document.forms[0].FMMS.value="";
+                document.getElementById('eliminarVin').style.display="none";
+            }
+
+            function eliminarVin(){
+                document.forms[0].op.value="eliminarVin";
+                document.forms[0].idUsu.value=<%= session.getAttribute("idusu")%>
+                document.forms[0].submit();
+            }
+            
             function historico(){
                 var forma = document.forms[0];
                 var emer = window.open('../ZF/Jsp/Log/Auditoria/Auditoria.jsp?getOp=buscar&accion=referencia&formulario=bl&referencia='+'<%=request.getAttribute("getIdBLs")%>','Auditoria','width=950,height=500,top=100%,left=100%,scrollbars=yes,resizable=yes');
@@ -222,8 +287,9 @@
                     <html:text property="FMM" value='<%= String.valueOf(request.getAttribute("getFMM"))%>'></html:text>
                 </div>
                 <% if (request.getAttribute("getIdBLs") != "") {%> 
-                <div>
+                <div id="divVines">
                     <fieldset id="el01">
+                        <input type="hidden" name="idVines" value='<%= String.valueOf(request.getAttribute("getIdVines"))%>'> 
                         <legend>VLs</legend>
                         <table>
                             <tr>
@@ -246,15 +312,11 @@
                                                                 <td>
                                                                     <input type="checkbox" name="checkReferencia" value="true"> Referencia
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="referencia" styleId="referencia" readonly="true" value='<%= String.valueOf(request.getAttribute("getReferencia"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="referencia" styleId="referencia" value='<%= String.valueOf(request.getAttribute("getReferencia"))%>'></html:text></td>
-                                                                <% }%> 
                                                                 <td colspan="2">
                                                                     <input type="checkbox" name="checkVin" value="true"> Vin
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
+                                                                <% if (request.getAttribute("getIdVines") != "") {%> 
                                                                 <td colspan="2"><html:text property="vin" styleId="vin" readonly="true" value='<%= String.valueOf(request.getAttribute("getVin"))%>'></html:text></td>
                                                                 <% } else {%> 
                                                                 <td colspan="2"><html:text property="vin" styleId="vin" value='<%= String.valueOf(request.getAttribute("getVin"))%>'></html:text></td>
@@ -262,126 +324,78 @@
                                                             </tr>
                                                             <tr>
                                                                 <td>
-                                                                    <input type="checkbox" name="checkDescripcion" value="true"> Codigo
+                                                                    <input type="checkbox" name="checkCodigo" value="true"> Codigo
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="codigo" styleId="codigo" readonly="true" value='<%= String.valueOf(request.getAttribute("getCodigo"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="codigo" styleId="codigo" value='<%= String.valueOf(request.getAttribute("getCodigo"))%>'></html:text></td>
-                                                                <% }%> 
+                                                                <td>
+                                                                    <input type="checkbox" name="checkPedido" value="true"> Pedido
+                                                                </td>
+                                                                <td colspan="2"><html:text property="pedido" styleId="pedido" value='<%= String.valueOf(request.getAttribute("getPedido"))%>'></html:text></td>
                                                             </tr>
                                                             <tr>
                                                                 <td>
                                                                     <input type="checkbox" name="checkFactura" value="true"> Factura
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="factura" styleId="factura" readonly="true" value='<%= String.valueOf(request.getAttribute("getFactura"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="factura" styleId="factura" value='<%= String.valueOf(request.getAttribute("getFactura"))%>'></html:text></td>
-                                                                <% }%> 
                                                             </tr>
                                                             <tr>
                                                                 <td>
                                                                     <input type="checkbox" name="checkDescripcion" value="true"> Descripcion
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="descripcion" styleId="descripcion" readonly="true" value='<%= String.valueOf(request.getAttribute("getDescripcion"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="descripcion" styleId="descripcion" value='<%= String.valueOf(request.getAttribute("getDescripcion"))%>'></html:text></td>
-                                                                <% }%>
                                                                 <td colspan="2">
                                                                     <input type="checkbox" name="checValorFob" value="true"> Valor Fob
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="valorFob" styleId="valorFob" readonly="true" value='<%= String.valueOf(request.getAttribute("getValorFob"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="valorFob" styleId="valorFob" value='<%= String.valueOf(request.getAttribute("getValorFob"))%>'></html:text></td>
-                                                                <% }%>
                                                             </tr>
                                                             <tr>
                                                                 <td>
                                                                     <input type="checkbox" name="checkColor" value="true"> Color
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="fechaColor" styleId="fechaColor" readonly="true" value='<%= String.valueOf(request.getAttribute("getColor"))%>'></html:text></td>
-                                                                <% } else {%> 
-                                                                <td colspan="2"><html:text property="fechaColor" styleId="fechaColor" value='<%= String.valueOf(request.getAttribute("getColor"))%>'></html:text></td>
-                                                                <% }%>
+                                                                <td colspan="2"><html:text property="color" styleId="color" value='<%= String.valueOf(request.getAttribute("getColor"))%>'></html:text></td>
                                                                 <td colspan="2">
                                                                     <input type="checkbox" name="checUltimoEvento" value="true"> Ultimo Evento
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="ultimoEvento" styleId="ultimoEvento" readonly="true" value='<%= String.valueOf(request.getAttribute("getUltimoEvento"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="ultimoEvento" styleId="ultimoEvento" value='<%= String.valueOf(request.getAttribute("getUltimoEvento"))%>'></html:text></td>
-                                                                <% }%>
                                                             </tr>
                                                             <tr>
                                                                 <td>
                                                                     <input type="checkbox" name="checkHuerfano" value="true"> Huerfano
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="huerfano" styleId="huerfano" readonly="true" value='<%= String.valueOf(request.getAttribute("getHuerfano"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="huerfano" styleId="huerfano" value='<%= String.valueOf(request.getAttribute("getHuerfano"))%>'></html:text></td>
-                                                                <% }%>
                                                                 <td colspan="2">
                                                                     <input type="checkbox" name="checkExisteEvento" value="true"> Existe Evento
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="existeEvento" styleId="existeEvento" readonly="true" value='<%= String.valueOf(request.getAttribute("getExisteEvento"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="existeEvento" styleId="existeEvento" value='<%= String.valueOf(request.getAttribute("getExisteEvento"))%>'></html:text></td>
-                                                                <% }%>
                                                             </tr>
                                                             <tr>
                                                                 <td>
                                                                     <input type="checkbox" name="checkDespachado" value="true"> Despachado
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="despachado" styleId="despachado" readonly="true" value='<%= String.valueOf(request.getAttribute("getDespachado"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="despachado" styleId="despachado" value='<%= String.valueOf(request.getAttribute("getDespachado"))%>'></html:text></td>
-                                                                <% }%>
                                                                 <td colspan="2">
                                                                     <input type="checkbox" name="checkHablador" value="true"> Hablador
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="hablador" styleId="hablador" readonly="true" value='<%= String.valueOf(request.getAttribute("getHablador"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="hablador" styleId="hablador" value='<%= String.valueOf(request.getAttribute("getHablador"))%>'></html:text></td>
-                                                                <% }%>
                                                             </tr>
                                                             <tr>
                                                                 <td>
                                                                     <input type="checkbox" name="checkFMMI" value="true"> FMM Ingreso
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="FMMI" styleId="FMMI" readonly="true" value='<%= String.valueOf(request.getAttribute("getFMMI"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="FMMI" styleId="FMMI" value='<%= String.valueOf(request.getAttribute("getFMMI"))%>'></html:text></td>
-                                                                <% }%>
                                                                 <td colspan="2">
                                                                     <input type="checkbox" name="checkFMMS" value="true"> FMM Salida
                                                                 </td>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:text property="FMMS" styleId="FMMS" readonly="true" value='<%= String.valueOf(request.getAttribute("getFMMS"))%>'></html:text></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:text property="FMMS" styleId="FMMS" value='<%= String.valueOf(request.getAttribute("getFMMS"))%>'></html:text></td>
-                                                                <% }%>
                                                             </tr>
                                                             <tr>
                                                                 <td class="text">Comentarios</td>
                                                             </tr>
                                                             <tr>
-                                                                <% if (request.getAttribute("getOp2") != "nuevo") {%> 
-                                                                <td colspan="2"><html:textarea property="comentarios" styleId="comentarios" readonly="true" value='<%= String.valueOf(request.getAttribute("getComentarios"))%>'></html:textarea></td>
-                                                                <% } else {%> 
                                                                 <td colspan="2"><html:textarea property="comentarios" styleId="comentarios" value='<%= String.valueOf(request.getAttribute("getComentarios"))%>'></html:textarea></td>
-                                                                <% }%> 
                                                             </tr>
                                                             <tr>
-                                                                <td colspan="3"><a class="boton" href="javascript:nuevoItem();">Nuevo</a> <a class="boton" id="submit2" href="javascript:guardarItem();">Guardar</a> <% if (request.getAttribute("getOp2") != "nuevo") {%> <a class="boton" href="javascript:eliminarItem();">Eliminar</a> <% }%></td>
+                                                                <td colspan="3"><a class="boton" href="javascript:nuevoVin();">Nuevo</a> <a class="boton" id="submitVin" href="javascript:guardarVin();">Guardar</a> <% if (request.getAttribute("getOp2") != "nuevo") {%> <div id="eliminarVin" style="display:inline"><a class="boton" href="javascript:eliminarVin();">Eliminar</a></div> <% }%></td>
                                                             </tr>
                                                         </table>
                                                     </fieldset>
@@ -394,20 +408,20 @@
                             <tr>
                                 <td colspan="2">
                                     <div style="overflow: auto; width: 300px; height: 150px; border: 1px solid #336699">
-                                        <c:forEach items="${CMB_VINES}" var="cat">
-                                            <input type="checkbox" name="vines" value="${cat.idVines}"> ${cat.referencia}<br>
+                                        <c:forEach items="${CMB_Vin}" var="cat">
+                                            <input type="checkbox" name="vines" value="${cat.idVines}"> <a href="javascript:consultaVin(${cat.idVines});">${cat.vin}</a><br>
                                         </c:forEach>
                                     </div>
                                 </td>
-                            </tr>
-                            <tr>
-                                <td class="text">Observaciones</td>
-                                <td colspan="2"><html:textarea property="observaciones" styleId="observaciones" value='<%= String.valueOf(request.getAttribute("getObservaciones"))%>'></html:textarea></td>
                             </tr>
                         </table>
                     </fieldset>
                 </div>
                 <% }%> 
+                <div>
+                    <label class="texto" for="txtObservaciones">Observaciones</label>
+                    <html:textarea property="observaciones" styleId="observaciones" value='<%= String.valueOf(request.getAttribute("getObservaciones"))%>'></html:textarea>
+                </div>
                 <div>
                     <fieldset>
                         <legend>
@@ -427,7 +441,7 @@
                     <div><br>
                     </div>
                     <div>
-                        <a class="boton" href="javascript:nuevo();">Nuevo</a> <a class="boton" id="submit" href="javascript:guardar();">Guardar</a> <% if (request.getAttribute("getIdBLs") != "") {%> <a class="boton" href="javascript:eliminar();">Eliminar</a> <% }%> <a class="boton" href="javascript:atras();">Volver</a>
+                        <a class="boton" href="javascript:nuevo();">Nuevo</a> <a class="boton" id="submit" href="javascript:guardar();">Guardar</a> <% if (request.getAttribute("getIdBLs") != "") {%> <div id="eliminarVin" style="display:inline"><a id="eliminar" class="boton" href="javascript:eliminar();">Eliminar</a></div> <% }%> <a class="boton" href="javascript:atras();">Volver</a>
                     </div>
                     <%
                         if (request.getAttribute("respuesta") != "") {

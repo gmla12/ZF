@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package forms;
 
 import java.sql.Date;
@@ -12,7 +11,8 @@ import org.apache.struts.action.ActionForm;
  *
  * @author Mario
  */
-public class BLForm extends ActionForm{
+public class BLForm extends ActionForm {
+
     private int idBLs;
     private String BL;
     private String cliente;
@@ -22,6 +22,19 @@ public class BLForm extends ActionForm{
     private String lote;
     private String FMM;
     private Integer idUsu;
+    private Integer idVines;
+    private String Vin;
+    private String Referencia;
+    private String Codigo;
+    private String Factura;
+    private String Descripcion;
+    private Float ValorFob;
+    private Integer Color;
+    private Boolean Huerfano;
+    private Boolean Despachado;
+    private String Pedido;
+    private String FMMI;
+    private String FMMS;
     private String op;
     private String op2;
 
@@ -113,4 +126,107 @@ public class BLForm extends ActionForm{
         this.op2 = op2;
     }
 
+    public String getCodigo() {
+        return Codigo;
+    }
+
+    public void setCodigo(String Codigo) {
+        this.Codigo = Codigo;
+    }
+
+    public Integer getColor() {
+        return Color;
+    }
+
+    public void setColor(Integer Color) {
+        this.Color = Color;
+    }
+
+    public String getDescripcion() {
+        return Descripcion;
+    }
+
+    public void setDescripcion(String Descripcion) {
+        this.Descripcion = Descripcion;
+    }
+
+    public Boolean getDespachado() {
+        return Despachado;
+    }
+
+    public void setDespachado(Boolean Despachado) {
+        this.Despachado = Despachado;
+    }
+
+    public String getFMMI() {
+        return FMMI;
+    }
+
+    public void setFMMI(String FMMI) {
+        this.FMMI = FMMI;
+    }
+
+    public String getFMMS() {
+        return FMMS;
+    }
+
+    public void setFMMS(String FMMS) {
+        this.FMMS = FMMS;
+    }
+
+    public String getFactura() {
+        return Factura;
+    }
+
+    public void setFactura(String Factura) {
+        this.Factura = Factura;
+    }
+
+    public Boolean getHuerfano() {
+        return Huerfano;
+    }
+
+    public void setHuerfano(Boolean Huerfano) {
+        this.Huerfano = Huerfano;
+    }
+
+    public String getReferencia() {
+        return Referencia;
+    }
+
+    public void setReferencia(String Referencia) {
+        this.Referencia = Referencia;
+    }
+
+    public Float getValorFob() {
+        return ValorFob;
+    }
+
+    public void setValorFob(Float ValorFob) {
+        this.ValorFob = ValorFob;
+    }
+
+    public String getVin() {
+        return Vin;
+    }
+
+    public void setVin(String Vin) {
+        this.Vin = Vin;
+    }
+
+    public String getPedido() {
+        return Pedido;
+    }
+
+    public void setPedido(String Pedido) {
+        this.Pedido = Pedido;
+    }
+
+    public Integer getIdVines() {
+        return idVines;
+    }
+
+    public void setIdVines(Integer idVines) {
+        this.idVines = idVines;
+    }
 }

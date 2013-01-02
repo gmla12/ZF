@@ -5,11 +5,13 @@
 package actions;
 
 import forms.BLOpForm;
+import forms.bean.BeanVin;
 import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import modelo.GestionBL;
+import modelo.GestionVin;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -46,6 +48,7 @@ public class ActionBLOp extends Action {
 
         BLOpForm fo = (BLOpForm) form;
         GestionBL gr = new GestionBL();
+        GestionVin grVin = new GestionVin();
         HttpSession session = request.getSession();
 
         System.out.println("********************************************");
@@ -66,27 +69,108 @@ public class ActionBLOp extends Action {
                 resultado = gr.MostrarBLFormulario(Integer.parseInt(fo.getId()), false, null);
                 if ((Boolean) resultado.get(0) == false) {
 
-                    request.setAttribute("getIdBLs", gr.getIdBLs());
-                    request.setAttribute("getBL", gr.getBL());
-                    request.setAttribute("getCliente", gr.getCliente());
-                    request.setAttribute("getMotonave", gr.getMotonave());
-                    request.setAttribute("getEtaFecha", gr.getEtaFecha());
-                    request.setAttribute("getEtaHora", gr.getEtaHora());
-                    request.setAttribute("getLote", gr.getLote());
-                    request.setAttribute("getFMM", gr.getFMM());
-                    request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
-                    request.setAttribute("getNombreUsu", gr.getNombreUsu());
-                    //para validar si se modifico un campo
-                    session.setAttribute("getBLIdBLs", gr.getIdBLs());
-                    session.setAttribute("getBLBL", gr.getBL());
-                    session.setAttribute("getBLCliente", gr.getCliente());
-                    session.setAttribute("getBLMotonave", gr.getMotonave());
-                    session.setAttribute("getBLEtaFecha", gr.getEtaFecha());
-                    session.setAttribute("getBLEtaHora", gr.getEtaHora());
-                    session.setAttribute("getBLLote", gr.getLote());
-                    session.setAttribute("getBLFMM", gr.getFMM());
+                    ArrayList<Object> resultado2 = new ArrayList<Object>();
+                    resultado2 = grVin.MostrarVin(Integer.parseInt(fo.getId()), false, null);
+                    if ((Boolean) resultado2.get(0) == false) {
 
-                    return mapping.findForward("modificar");
+                        session.setAttribute("CMB_Vin", resultado2.get(1));
+                        int idVin = 0;
+
+                        ArrayList<Object> CMB_Vin = new ArrayList<Object>();
+                        CMB_Vin = (ArrayList) resultado2.get(1);
+                        if (CMB_Vin.size() > 0) {
+
+                            BeanVin buVin = new BeanVin();
+                            buVin = (BeanVin) CMB_Vin.get(0);
+                            idVin = (Integer) buVin.getIdVines();
+
+                        }
+
+                        ArrayList<Object> resultado3 = new ArrayList<Object>();
+                        resultado3 = grVin.MostrarVinFormulario(Integer.parseInt(fo.getId()), idVin, false, null);
+                        if ((Boolean) resultado3.get(0) == false) {
+
+                            request.setAttribute("getIdBLs", gr.getIdBLs());
+                            request.setAttribute("getBL", gr.getBL());
+                            request.setAttribute("getCliente", gr.getCliente());
+                            request.setAttribute("getMotonave", gr.getMotonave());
+                            request.setAttribute("getEtaFecha", gr.getEtaFecha());
+                            request.setAttribute("getEtaHora", gr.getEtaHora());
+                            request.setAttribute("getLote", gr.getLote());
+                            request.setAttribute("getFMM", gr.getFMM());
+                            request.setAttribute("getFechaModificacion", gr.getFechaModificacion());
+                            request.setAttribute("getNombreUsu", gr.getNombreUsu());
+                            //para validar si se modifico un campo
+                            session.setAttribute("getBLIdBLs", gr.getIdBLs());
+                            session.setAttribute("getBLBL", gr.getBL());
+                            session.setAttribute("getBLCliente", gr.getCliente());
+                            session.setAttribute("getBLMotonave", gr.getMotonave());
+                            session.setAttribute("getBLEtaFecha", gr.getEtaFecha());
+                            session.setAttribute("getBLEtaHora", gr.getEtaHora());
+                            session.setAttribute("getBLLote", gr.getLote());
+                            session.setAttribute("getBLFMM", gr.getFMM());
+                            //vin
+                            if (idVin != 0) {
+                                request.setAttribute("getIdVines", grVin.getIdVines());
+                                request.setAttribute("getVin", grVin.getVin());
+                                request.setAttribute("getReferencia", grVin.getReferencia());
+                                request.setAttribute("getCodigo", grVin.getCodigo());
+                                request.setAttribute("getFactura", grVin.getFactura());
+                                request.setAttribute("getDescripcion", grVin.getDescripcion());
+                                request.setAttribute("getValorFob", grVin.getValorFob());
+                                request.setAttribute("getColor", grVin.getColor());
+                                request.setAttribute("getHuerfano", grVin.getHuerfano());
+                                request.setAttribute("getDespachado", grVin.getDespachado());
+                                request.setAttribute("getPedido", grVin.getPedido());
+                                request.setAttribute("getFMMI", grVin.getFMMI());
+                                request.setAttribute("getFMMS", grVin.getFMMS());
+                                request.setAttribute("getFechaModificacion", grVin.getFechaModificacion());
+                                request.setAttribute("getNombreUsu", grVin.getNombreUsu());
+                                //para validar si se modifico un campo
+                                session.setAttribute("getBLIdVines", grVin.getIdVines());
+                                session.setAttribute("getBLVin", grVin.getVin());
+                                session.setAttribute("getBLReferencia", grVin.getReferencia());
+                                session.setAttribute("getBLCodigo", grVin.getCodigo());
+                                session.setAttribute("getBLFactura", grVin.getFactura());
+                                session.setAttribute("getBLDescripcion", grVin.getDescripcion());
+                                session.setAttribute("getBLValorFob", grVin.getValorFob());
+                                session.setAttribute("getBLColor", grVin.getColor());
+                                session.setAttribute("getBLHuerfano", grVin.getHuerfano());
+                                session.setAttribute("getBLDespachado", grVin.getDespachado());
+                                session.setAttribute("getBLPedido", grVin.getPedido());
+                                session.setAttribute("getBLFMMI", grVin.getFMMI());
+                                session.setAttribute("getBLFMMS", grVin.getFMMS());
+                            } else {
+                                request.setAttribute("getIdVines", "");
+                                request.setAttribute("getVin", "");
+                                request.setAttribute("getReferencia", "");
+                                request.setAttribute("getCodigo", "");
+                                request.setAttribute("getFactura", "");
+                                request.setAttribute("getDescripcion", "");
+                                request.setAttribute("getValorFob", "");
+                                request.setAttribute("getColor", "");
+                                request.setAttribute("getHuerfano", "");
+                                request.setAttribute("getDespachado", "");
+                                request.setAttribute("getPedido", "");
+                                request.setAttribute("getFMMI", "");
+                                request.setAttribute("getFMMS", "");
+                            }
+
+                            return mapping.findForward("modificar");
+
+                        } else {
+
+                            request.setAttribute("error", resultado3.get(1));
+                            return mapping.findForward("error");
+
+                        }
+
+                    } else {
+
+                        request.setAttribute("error", resultado2.get(1));
+                        return mapping.findForward("error");
+
+                    }
 
                 } else {
 
